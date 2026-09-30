@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "date": "2026-09-30",
+  "channel": "prototype",
+  "codeSigned": false,
+  "windowsGameTested": false,
+  "assets": [
+    {
+      "label": "Windows 설치 파일",
+      "arch": "x64",
+      "size": "137.4 MB",
+      "url": "https://github.com/kianderson19/johap/releases/download/desktop-v0.1.0/Johap-0.1.0-win-x64.exe",
+      "sha256": "be3022b088253ebb30971c7aaeb292a54c157fe7bb11bb005f085a161ae739be"
+    },
+    {
+      "label": "Windows 포터블 ZIP",
+      "arch": "x64",
+      "size": "178.0 MB",
+      "url": "https://github.com/kianderson19/johap/releases/download/desktop-v0.1.0/Johap-0.1.0-win-x64.zip",
+      "sha256": "2bc7afdb5db6b328808fce30d93804c5669f9c9d6350b30ebd5d63e9e6f011c7"
+    }
+  ]
+}
