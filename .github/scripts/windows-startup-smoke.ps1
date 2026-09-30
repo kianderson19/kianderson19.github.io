@@ -2,9 +2,9 @@
 # test-only application flags, or relaxed Electron security settings.
 [CmdletBinding()]
 param(
-  [ValidatePattern('^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$')]
+  [ValidatePattern('\A(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?\z')]
   [string]$Version,
-  [ValidatePattern('^[a-fA-F0-9]{64}$')]
+  [ValidatePattern('\A[a-fA-F0-9]{64}\z')]
   [string]$ExpectedSha256,
   [switch]$CleanupOnly
 )

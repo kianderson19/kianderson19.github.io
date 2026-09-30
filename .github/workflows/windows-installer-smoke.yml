@@ -2,13 +2,23 @@ name: Windows NSIS installer smoke
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Published desktop version, without v (for example 0.1.1)'
+        required: true
+        type: string
+        default: '0.1.1'
+      sha256:
+        description: 'Reviewed SHA256 of the published Windows EXE (64 hexadecimal characters)'
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   installer:
-    name: Published v0.1.0 installer round trip
+    name: Published installer round trip
     runs-on: windows-2022
     timeout-minutes: 10
     defaults:
@@ -23,7 +33,13 @@ jobs:
 
       - name: Verify install, installed startup and uninstall
         timeout-minutes: 6
-        run: '& ./.github/scripts/windows-installer-smoke.ps1'
+        env:
+          JOHAP_SMOKE_VERSION: ${{ inputs.version }}
+          JOHAP_SMOKE_SHA256: ${{ inputs.sha256 }}
+        run: >-
+          & ./.github/scripts/windows-installer-smoke.ps1
+          -Version $env:JOHAP_SMOKE_VERSION
+          -ExpectedSha256 $env:JOHAP_SMOKE_SHA256
 
       - name: Clean up only this smoke installation and process trees
         if: always()

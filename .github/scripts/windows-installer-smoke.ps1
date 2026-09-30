@@ -1,19 +1,26 @@
 # Published NSIS installer smoke. No UI automation or security-policy changes.
 # NSIS switches: https://nsis.sourceforge.io/Docs/Chapter3.html#installerusage
 # /currentuser is supported by electron-builder's assistedInstaller.nsh.
-[CmdletBinding()]
-param([switch]$CleanupOnly)
+[CmdletBinding(DefaultParameterSetName = 'Verify')]
+param(
+  [Parameter(Mandatory = $true, ParameterSetName = 'Verify')]
+  [ValidatePattern('\A(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?\z')]
+  [string]$Version,
+  [Parameter(Mandatory = $true, ParameterSetName = 'Verify')]
+  [ValidatePattern('\A[a-fA-F0-9]{64}\z')]
+  [string]$ExpectedSha256,
+  [Parameter(Mandatory = $true, ParameterSetName = 'Cleanup')]
+  [switch]$CleanupOnly
+)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if (-not $IsWindows -or -not $env:RUNNER_TEMP -or -not $env:GITHUB_RUN_ID -or -not $env:GITHUB_RUN_ATTEMPT -or -not $env:GITHUB_JOB) {
   throw 'Use a fresh Windows GitHub-hosted runner with PowerShell 7.'
 }
-$version = '0.1.0'
 # electron-builder 26.15.3 UUID.v5('com.johap.desktop',
-# '50e065bc-3134-11e6-9bab-38c9862bdaf3'), matching this SHA-pinned release.
+# '50e065bc-3134-11e6-9bab-38c9862bdaf3'), stable for this app identity.
 $appGuid = '9eef781b-93c4-5ccc-8d53-32d0cc601b01'
-$expectedHash = 'be3022b088253ebb30971c7aaeb292a54c157fe7bb11bb005f085a161ae739be'
-$installerUrl = "https://github.com/kianderson19/johap/releases/download/desktop-v$version/Johap-$version-win-x64.exe"
+$expectedHash = if ($ExpectedSha256) { $ExpectedSha256.ToLowerInvariant() } else { '' }
 $ownerFile = Join-Path $env:RUNNER_TEMP 'johap-installer-owned.json'
 $evidenceDirectory = Join-Path $env:RUNNER_TEMP 'johap-installer-evidence'
 $summaryFile = Join-Path $evidenceDirectory 'summary.json'
@@ -24,6 +31,13 @@ $summary = $null
 $mayReadLog = $false
 $stage = 'preflight'
 
+function Assert-ReleaseIdentity {
+  # Cleanup restores these values from this run's ownership record; validate it
+  # again before accepting a registration or starting its scoped uninstaller.
+  if ($Version -cnotmatch '\A(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?\z' -or $expectedHash -cnotmatch '\A[a-f0-9]{64}\z') {
+    throw 'Version and a 64-character hexadecimal ExpectedSha256 are required.'
+  }
+}
 function Protect-Text([string]$Text) {
   foreach ($prefix in @($env:RUNNER_TEMP, $env:USERPROFILE, $env:APPDATA, $env:LOCALAPPDATA)) {
     if ($prefix) { $Text = [regex]::Replace($Text, [regex]::Escape($prefix), '<runner-path>', 'IgnoreCase') }
@@ -257,6 +271,9 @@ if ($CleanupOnly) {
   $cleanupFailed = $false
   try {
     Assert-ControlledState
+    $Version = [string]$state.version
+    $expectedHash = [string]$state.expectedSha256
+    Assert-ReleaseIdentity
     $mayReadLog = $true
     Stop-OwnedProcessTrees
     Invoke-OwnedUninstall
@@ -270,6 +287,8 @@ if ($CleanupOnly) {
   exit 0
 }
 
+Assert-ReleaseIdentity
+$installerUrl = "https://github.com/kianderson19/johap/releases/download/desktop-v$Version/Johap-$Version-win-x64.exe"
 New-Item -ItemType Directory -Path $evidenceDirectory -Force | Out-Null
 $summary = [ordered]@{
   result = 'failed'; version = $version; artifactUrl = $installerUrl
@@ -292,6 +311,7 @@ try {
   New-Item -ItemType Directory -Path $root | Out-Null
   $state = [pscustomobject]@{
     runId = $env:GITHUB_RUN_ID; runAttempt = $env:GITHUB_RUN_ATTEMPT; job = $env:GITHUB_JOB
+    version = $Version; expectedSha256 = $expectedHash
     root = $root; installDirectory = (Join-Path $root 'Johap'); processes = @()
     installAttempted = $false; installRemoved = $false; uninstallExitCode = $null
   }
