@@ -1,0 +1,43 @@
+name: Windows NSIS installer smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  installer:
+    name: Published v0.1.0 installer round trip
+    runs-on: windows-2022
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Check out installer smoke script
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+
+      - name: Verify install, installed startup and uninstall
+        timeout-minutes: 6
+        run: '& ./.github/scripts/windows-installer-smoke.ps1'
+
+      - name: Clean up only this smoke installation and process trees
+        if: always()
+        timeout-minutes: 2
+        run: '& ./.github/scripts/windows-installer-smoke.ps1 -CleanupOnly'
+
+      - name: Retain bounded installer evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: johap-windows-installer-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/johap-installer-evidence/desktop.log
+            ${{ runner.temp }}/johap-installer-evidence/summary.json
+          if-no-files-found: warn
+          retention-days: 3
+          compression-level: 6
