@@ -1,0 +1,3 @@
+overwatch.json and guide.json are the namu.wiki crawl shipped with
+https://github.com/scarf005/owc (AGPL-3.0-or-later), data updated 2026-09-15.
+The prose is namu.wiki text. This folder is that data, not the composition engine.
