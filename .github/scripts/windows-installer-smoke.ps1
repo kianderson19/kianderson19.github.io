@@ -9,6 +9,9 @@ if (-not $IsWindows -or -not $env:RUNNER_TEMP -or -not $env:GITHUB_RUN_ID -or -n
   throw 'Use a fresh Windows GitHub-hosted runner with PowerShell 7.'
 }
 $version = '0.1.0'
+# electron-builder 26.15.3 UUID.v5('com.johap.desktop',
+# '50e065bc-3134-11e6-9bab-38c9862bdaf3'), matching this SHA-pinned release.
+$appGuid = '9eef781b-93c4-5ccc-8d53-32d0cc601b01'
 $expectedHash = 'be3022b088253ebb30971c7aaeb292a54c157fe7bb11bb005f085a161ae739be'
 $installerUrl = "https://github.com/kianderson19/johap/releases/download/desktop-v$version/Johap-$version-win-x64.exe"
 $ownerFile = Join-Path $env:RUNNER_TEMP 'johap-installer-owned.json'
@@ -58,10 +61,12 @@ function Get-JohapRegistrations {
           $entry = $null
           try {
             $entry = $uninstall.OpenSubKey($keyName)
-            if ($null -eq $entry -or [string]$entry.GetValue('DisplayName') -notmatch '^Johap(?:\s|$)') { continue }
-            $found["$hiveName/$keyName"] = [pscustomobject]@{
-              hive = $hiveName; key = $keyName
-              location = [string]$entry.GetValue('InstallLocation')
+            if ($null -eq $entry) { continue }
+            if ($keyName -ne $appGuid -and [string]$entry.GetValue('DisplayName') -notmatch '^Johap(?:\s|$)') { continue }
+            $found["$hiveName/$viewName/$keyName"] = [pscustomobject]@{
+              hive = $hiveName; view = $viewName; key = $keyName
+              uninstallString = [string]$entry.GetValue('UninstallString')
+              quietUninstallString = [string]$entry.GetValue('QuietUninstallString')
               version = [string]$entry.GetValue('DisplayVersion')
             }
           } finally { if ($null -ne $entry) { $entry.Dispose() } }
@@ -74,14 +79,59 @@ function Get-JohapRegistrations {
   }
   return @($found.Values)
 }
+function Get-JohapInstallLocations {
+  # NSIS stores InstallLocation in Software\APP_GUID, not the uninstall-list key.
+  # Read only the exact GUID generated for the pinned app; do not guess registry keys.
+  foreach ($hiveName in @('CurrentUser', 'LocalMachine')) {
+    foreach ($viewName in @('Registry64', 'Registry32')) {
+      $base = $null; $entry = $null
+      try {
+        $base = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]$hiveName, [Microsoft.Win32.RegistryView]$viewName)
+        $entry = $base.OpenSubKey("Software\$appGuid")
+        if ($null -ne $entry) {
+          [pscustomobject]@{ hive = $hiveName; view = $viewName; location = [string]$entry.GetValue('InstallLocation') }
+        }
+      } finally {
+        if ($null -ne $entry) { $entry.Dispose() }
+        if ($null -ne $base) { $base.Dispose() }
+      }
+    }
+  }
+}
 function Assert-OwnedRegistration {
   $entries = @(Get-JohapRegistrations)
-  if ($entries.Count -ne 1 -or $entries[0].hive -ne 'CurrentUser' -or $entries[0].version -ne $version) {
-    throw 'Expected exactly one current-user registration of the tested version.'
+  if (@($entries | Where-Object { $_.view -eq 'Registry64' }).Count -ne 1) {
+    throw 'Expected one 64-bit current-user uninstall registration of the tested app.'
   }
-  $registered = [IO.Path]::GetFullPath($entries[0].location).TrimEnd('\')
-  if ($registered -ne [IO.Path]::GetFullPath($state.installDirectory).TrimEnd('\')) {
-    throw 'Uninstall refused: registration does not point to this controlled installation.'
+  $ownedUninstaller = Join-Path $state.installDirectory 'Uninstall Johap.exe'
+  $expectedUninstall = '"{0}" /currentuser' -f $ownedUninstaller
+  # Validate the complete known NSIS command, but never execute registry text.
+  # HKCU may expose the same key in both views; every observed row must agree.
+  foreach ($entry in $entries) {
+    if ($entry.hive -ne 'CurrentUser' -or $entry.key -ne $appGuid -or $entry.version -ne $version) {
+      throw 'Uninstall refused: unexpected application, version or machine-wide registration.'
+    }
+    if ($entry.uninstallString -ne $expectedUninstall -or $entry.quietUninstallString -ne ($expectedUninstall + ' /S')) {
+      throw 'Uninstall refused: registry commands do not exactly target this controlled current-user uninstaller.'
+    }
+  }
+  $locations = @(Get-JohapInstallLocations)
+  if (@($locations | Where-Object { $_.view -eq 'Registry64' }).Count -ne 1) {
+    throw 'Expected the pinned app GUID install-location key in the 64-bit registry view.'
+  }
+  foreach ($entry in $locations) {
+    if ($entry.hive -ne 'CurrentUser' -or [string]::IsNullOrWhiteSpace($entry.location) -or -not [IO.Path]::IsPathFullyQualified($entry.location)) {
+      throw 'Uninstall refused: the app GUID install location is absent, relative or machine-wide.'
+    }
+    $registered = [IO.Path]::GetFullPath($entry.location).TrimEnd('\')
+    if ($registered -ne [IO.Path]::GetFullPath($state.installDirectory).TrimEnd('\')) {
+      throw 'Uninstall refused: the app GUID install location is outside this controlled installation.'
+    }
+  }
+}
+function Assert-NoJohapRegistration {
+  if (@(Get-JohapRegistrations).Count -ne 0 -or @(Get-JohapInstallLocations).Count -ne 0) {
+    throw 'A Johap uninstall or app GUID registration remains; a fresh, unregistered runner is required.'
   }
 }
 function Start-OwnedProcess([string]$Executable, [string]$Arguments, [string]$Kind) {
@@ -137,7 +187,7 @@ function Invoke-OwnedUninstall {
   if ($null -eq $state -or -not $state.installAttempted) { return }
   Assert-ControlledState
   if (-not (Test-Path -LiteralPath $state.installDirectory)) {
-    if (@(Get-JohapRegistrations).Count -ne 0) { throw 'The installation directory is absent, but a Johap registration remains.' }
+    Assert-NoJohapRegistration
     $state.installRemoved = $true; Save-State; return
   }
   Assert-OwnedRegistration
@@ -156,7 +206,7 @@ function Invoke-OwnedUninstall {
   $deadline = [DateTimeOffset]::UtcNow.AddSeconds(10)
   while ((Test-Path -LiteralPath $state.installDirectory) -and [DateTimeOffset]::UtcNow -lt $deadline) { Start-Sleep -Milliseconds 250 }
   if (Test-Path -LiteralPath $state.installDirectory) { throw 'The uninstaller did not remove the controlled installation directory.' }
-  if (@(Get-JohapRegistrations).Count -ne 0) { throw 'The uninstaller left a Johap registration behind.' }
+  Assert-NoJohapRegistration
   $state.installRemoved = $true
   Save-State
 }
@@ -191,6 +241,14 @@ function Save-Evidence {
     [IO.File]::Move($pending, $summaryFile, $true)
   }
 }
+function Record-CleanupError([string]$Detail) {
+  if ($null -eq $summary) { return }
+  $summary.result = 'failed'
+  if (-not $summary.Contains('cleanupErrors')) { $summary['cleanupErrors'] = @() }
+  $summary.cleanupErrors = @($summary.cleanupErrors) + $Detail
+  # Keep the first failure separate from any later cleanup failure.
+  if (-not $summary.error) { $summary.error = "Cleanup: $Detail" }
+}
 
 if ($CleanupOnly) {
   if (-not (Test-Path -LiteralPath $ownerFile)) { exit 0 }
@@ -205,7 +263,7 @@ if ($CleanupOnly) {
   } catch {
     $cleanupFailed = $true
     $detail = Protect-Text $_.Exception.Message
-    if ($null -ne $summary) { $summary.result = 'failed'; $summary.error = "Cleanup: $detail" }
+    Record-CleanupError $detail
     Write-Host "::error::$detail"
   } finally { Save-Evidence }
   if ($cleanupFailed) { exit 1 }
@@ -220,7 +278,7 @@ $summary = [ordered]@{
   startedAt = [DateTimeOffset]::UtcNow.ToString('o'); finishedAt = $null
   installerExitCode = $null; uninstallExitCode = $null
   currentUserRegistrationVerified = $false; installedFilesVerified = $false
-  startupVerified = $false; installationRemoved = $false; error = $null
+  startupVerified = $false; installationRemoved = $false; error = $null; cleanupErrors = @()
 }
 $failure = $null
 Save-Evidence
@@ -228,7 +286,7 @@ try {
   if (Test-Path -LiteralPath $ownerFile) { throw 'Existing smoke ownership state found; use a fresh runner.' }
   if (Test-Path -LiteralPath $profileDirectory) { throw 'Existing Johap profile found; use a fresh runner.' }
   if (Get-Process -Name 'Johap' -ErrorAction SilentlyContinue) { throw 'Johap is already running; no existing process will be touched.' }
-  if (@(Get-JohapRegistrations).Count -ne 0) { throw 'A prior Johap installation is registered; this smoke must not replace it.' }
+  Assert-NoJohapRegistration
   $mayReadLog = $true
   $root = Join-Path $env:RUNNER_TEMP ('johap-installer-smoke-' + [guid]::NewGuid().ToString('N'))
   New-Item -ItemType Directory -Path $root | Out-Null
@@ -293,8 +351,10 @@ try {
     Stop-OwnedProcessTrees
     Invoke-OwnedUninstall
   } catch {
-    $failure = 'Cleanup: ' + (Protect-Text $_.Exception.Message)
-    $summary.result = 'failed'; $summary.error = $failure
+    $detail = Protect-Text $_.Exception.Message
+    Record-CleanupError $detail
+    if ($null -eq $failure) { $failure = "Cleanup: $detail" }
+    Write-Host "::error::Cleanup: $detail"
   } finally { Save-Evidence }
 }
 if ($null -ne $failure) { Write-Host "::error::$failure"; exit 1 }
