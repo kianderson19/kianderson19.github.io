@@ -1,0 +1,61 @@
+
+    :root { --ink:#15253b; --muted:#56657a; --line:#d8e1ea; --paper:#fff; --soft:#f3f6fa; --accent:#b4600e; --blue:#146a90; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#eaf0f6; color:var(--ink); font:15px/1.85 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; }
+    .report { width:min(1060px,100%); margin:34px auto; background:var(--paper); border:1px solid var(--line); box-shadow:0 12px 44px #192b4210; }
+    .cover { padding:42px 48px 34px; background:#122238; color:#fff; border-top:5px solid #ffb347; }
+    .eyebrow { margin:0 0 11px; color:#79dbfa; font-size:11px; font-weight:800; letter-spacing:.18em; }
+    h1 { margin:0; font-size:clamp(28px,4vw,42px); line-height:1.3; letter-spacing:-.04em; }
+    .cover p:last-child { max-width:770px; margin:18px 0 0; font-size:14px; color:#c6d4e6; }
+    .meta { display:flex; flex-wrap:wrap; gap:8px 22px; padding:15px 48px; font-size:11px; color:var(--muted); border-bottom:1px solid var(--line); }
+    nav { padding:21px 48px; border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; gap:8px 20px; font-size:12px; }
+    a { color:var(--blue); text-decoration-thickness:1px; text-underline-offset:3px; }
+    main { padding:0 48px 35px; }
+    section { padding-top:32px; scroll-margin-top:16px; }
+    section + section { border-top:1px solid var(--line); margin-top:31px; }
+    h2 { margin:0 0 14px; font-size:24px; line-height:1.4; letter-spacing:-.025em; }
+    h2 .number { color:var(--blue); font-size:13px; margin-right:10px; vertical-align:3px; }
+    h3 { margin:26px 0 10px; font-size:17px; line-height:1.5; }
+    p { margin:12px 0; }
+    strong { font-weight:750; }
+    ul,ol { padding-left:21px; }
+    li + li { margin-top:7px; }
+    .lead { font-size:17px; line-height:1.85; }
+    .callout { border-left:3px solid var(--blue); padding:13px 18px; background:#edf7fb; margin:18px 0; }
+    .callout.warm { border-color:var(--accent); background:#fff5e9; }
+    .callout p { margin:4px 0; }
+    .small { font-size:12px; color:var(--muted); line-height:1.9; }
+    .formula { padding:15px 17px; background:#f1f5fa; border:1px solid var(--line); color:#17334e; font-size:13px; line-height:1.9; overflow-wrap:anywhere; }
+    code { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:.9em; }
+    .formula code { white-space:pre-wrap; }
+    .table-wrap { max-width:100%; overflow:auto; border:1px solid var(--line); margin:16px 0; }
+    table { width:100%; border-collapse:collapse; font-size:12px; line-height:1.75; }
+    th,td { padding:11px 13px; text-align:left; vertical-align:top; border-bottom:1px solid var(--line); }
+    thead th { font-size:11px; color:#34465f; background:#edf2f7; }
+    tbody tr:last-child th,tbody tr:last-child td { border-bottom:0; }
+    tbody th { font-weight:650; }
+    tbody tr:nth-child(even) { background:#fafbfd; }
+    caption { padding:11px 13px; text-align:left; background:#f6f8fb; color:var(--muted); font-size:11px; }
+    .nowrap { white-space:nowrap; font-variant-numeric:tabular-nums; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .example { padding:18px; border:1px solid var(--line); background:#fafcfe; }
+    .example h3 { margin-top:0; font-size:15px; }
+    .example p:last-child { margin-bottom:0; }
+    .result { font-size:22px; color:var(--blue); font-weight:800; font-variant-numeric:tabular-nums; }
+    .tag { display:inline-block; padding:2px 6px; margin-right:5px; font-size:10px; font-weight:700; color:#80500c; background:#fff0d9; }
+    .calculator { padding:20px; border:1px solid var(--line); background:#f7fafc; margin:18px 0; }
+    .calculator h3 { margin-top:0; }
+    .inputs { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:16px 0; }
+    .inputs label { font-size:12px; font-weight:650; }
+    .inputs small { display:block; font-size:10px; font-weight:400; color:var(--muted); }
+    input[type="number"] { display:block; width:100%; margin-top:6px; padding:9px 10px; border:1px solid #b8c8d8; background:#fff; color:var(--ink); border-radius:3px; font:inherit; }
+    .toggle { font-size:12px; }
+    .calc-result { margin-top:15px; padding-top:14px; border-top:1px solid var(--line); font-size:13px; }
+    .calc-result strong { color:var(--blue); }
+    button { font:inherit; padding:6px 10px; background:#fff; color:var(--ink); border:1px solid #b8c8d8; border-radius:3px; font-size:11px; margin-left:12px; cursor:pointer; }
+    button:focus-visible,a:focus-visible,input:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+    footer { padding:25px 48px 32px; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }
+    footer code { overflow-wrap:anywhere; }
+    @media(max-width:700px) { .report{margin:0;border:0;box-shadow:none}.cover{padding:30px 22px}.meta,nav{padding:15px 22px}main{padding:0 22px 28px}footer{padding:22px}.two-col{grid-template-columns:1fr}.inputs{grid-template-columns:repeat(2,minmax(0,1fr))}body{font-size:14px}th,td{padding:9px 10px}h2{font-size:21px}.formula{font-size:12px} }
+    @media print { body{background:#fff;font-size:10pt}.report{margin:0;width:100%;border:0;box-shadow:none}.cover{background:#fff;color:#15253b;padding:20px 24px;border-color:#b4600e}.cover p:last-child{color:#56657a}.eyebrow{color:#146a90}.meta,nav{padding:12px 24px}main{padding:0 24px}.table-wrap{overflow:visible}tr,.formula,.example,.callout{break-inside:avoid}section{padding-top:22px}h2,h3{break-after:avoid}footer{padding:20px 24px}.calculator{display:none}a{color:inherit} }
+  

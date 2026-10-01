@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "date": "2026-10-01",
   "channel": "prototype",
   "codeSigned": false,
@@ -9,22 +9,22 @@
       "label": "Windows 설치 파일",
       "arch": "x64",
       "size": "144.2 MB",
-      "url": "https://github.com/kianderson19/johap/releases/download/desktop-v0.1.1/Johap-0.1.1-win-x64.exe",
-      "sha256": "885f89c71e49a3e7e2bf533efb28088d2c698a32c997914188883555a0e34e0e"
+      "url": "https://github.com/kianderson19/johap/releases/download/desktop-v0.1.2/Johap-0.1.2-win-x64.exe",
+      "sha256": "f62ed6ae55c9f7ca635a5bdf5b44ff8616dab8327b664946e878f76d8ef05eb0"
     },
     {
       "label": "Windows 포터블 ZIP",
       "arch": "x64",
       "size": "186.8 MB",
-      "url": "https://github.com/kianderson19/johap/releases/download/desktop-v0.1.1/Johap-0.1.1-win-x64.zip",
-      "sha256": "783fbc70c9731b4658edf6b91f314ca6729b06f6f1301013556a5292dda1e60b"
+      "url": "https://github.com/kianderson19/johap/releases/download/desktop-v0.1.2/Johap-0.1.2-win-x64.zip",
+      "sha256": "f2450dc3ac6ed6a098cc2c6a17fb6edaa793989b32e32297d82748d4d1ec264c"
     }
   ],
   "windowsStartupSmokeTested": true,
   "windowsInstallerSmokeTested": true,
   "verification": {
-    "startup": "https://github.com/kianderson19/kianderson19.github.io/actions/runs/36748505080",
-    "installer": "https://github.com/kianderson19/kianderson19.github.io/actions/runs/36748509910",
+    "startup": "https://github.com/kianderson19/kianderson19.github.io/actions/runs/36805763457",
+    "installer": "https://github.com/kianderson19/kianderson19.github.io/actions/runs/36805766019",
     "scope": "Windows Server 2022 자동 시작·설치·제거 검사. 실제 게임 호환성은 추가 검증 필요."
   }
 }
