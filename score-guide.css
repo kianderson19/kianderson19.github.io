@@ -1,5 +1,4 @@
-
-    :root { --ink:#15253b; --muted:#56657a; --line:#d8e1ea; --paper:#fff; --soft:#f3f6fa; --accent:#b4600e; --blue:#146a90; }
+:root { --ink:#15253b; --muted:#56657a; --line:#d8e1ea; --paper:#fff; --soft:#f3f6fa; --accent:#b4600e; --blue:#146a90; }
     * { box-sizing:border-box; }
     body { margin:0; background:#eaf0f6; color:var(--ink); font:15px/1.85 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; }
     .report { width:min(1060px,100%); margin:34px auto; background:var(--paper); border:1px solid var(--line); box-shadow:0 12px 44px #192b4210; }
@@ -59,3 +58,12 @@
     @media(max-width:700px) { .report{margin:0;border:0;box-shadow:none}.cover{padding:30px 22px}.meta,nav{padding:15px 22px}main{padding:0 22px 28px}footer{padding:22px}.two-col{grid-template-columns:1fr}.inputs{grid-template-columns:repeat(2,minmax(0,1fr))}body{font-size:14px}th,td{padding:9px 10px}h2{font-size:21px}.formula{font-size:12px} }
     @media print { body{background:#fff;font-size:10pt}.report{margin:0;width:100%;border:0;box-shadow:none}.cover{background:#fff;color:#15253b;padding:20px 24px;border-color:#b4600e}.cover p:last-child{color:#56657a}.eyebrow{color:#146a90}.meta,nav{padding:12px 24px}main{padding:0 24px}.table-wrap{overflow:visible}tr,.formula,.example,.callout{break-inside:avoid}section{padding-top:22px}h2,h3{break-after:avoid}footer{padding:20px 24px}.calculator{display:none}a{color:inherit} }
   
+    details { margin:18px 0; border:1px solid var(--line); padding:14px 16px; background:var(--soft); }
+    summary { cursor:pointer; color:var(--blue); font-weight:750; font-size:13px; }
+    summary:focus-visible { outline:2px solid var(--blue); outline-offset:4px; }
+    .presets { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+    .presets button { margin:0; min-height:38px; text-align:left; }
+    .presets button[aria-pressed="true"] { border-color:var(--accent); background:#fff0d9; color:#70420c; }
+    .provenance li { overflow-wrap:anywhere; }
+    .provenance code { display:block; font-size:10px; }
+    @media print { details { background:#fff; } details.provenance { display:none; } .presets { display:none; } }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Johap 점수 설명 · 2026-10-01</title><meta name="description" content="조합·영웅 점수의 요소, 가중치, 1~9점 계산식과 맵·티어 승률 추정을 공개합니다."><link rel="canonical" href="https://kianderson19.github.io/score-guide.html"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'"><meta name="referrer" content="no-referrer">
+  <title>Johap 점수 설명 · 2026-10-01</title><meta name="description" content="검토된 영웅 능력과 맵·구간·공수 근거, 조건부 점수 변화, 가중치와 1~9점 계산 예시를 공개합니다."><link rel="canonical" href="https://kianderson19.github.io/score-guide.html"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'"><meta name="referrer" content="no-referrer">
   <link rel="stylesheet" href="score-guide.css">
 </head>
 <body>
@@ -19,8 +19,8 @@
     <section id="meaning">
       <h2><span class="number">01</span>승리 확률이 아닌, 이 입력에서의 적합도</h2>
       <p class="lead">Johap의 점수는 <strong>현재 입력한 아군·상대 영웅, 맵, 구간과 통계 범위에 대한 조건부 평가</strong>입니다. 9점이 90% 승률을 뜻하거나, 그 영웅이 모든 상황에서 강하다는 뜻은 아닙니다.</p>
-      <div class="callout"><p><strong>5점은 중립 기준입니다.</strong> 등록된 근거가 없다는 이유만으로 유리함을 가산하지 않습니다. 도구 태그와 편집 규칙이 만든 점수이며, 실제 경기 결과로 보정한 승률 예측 모델은 아닙니다.</p></div>
-      <p>개인 후보와 팀 점수는 같은 다섯 항목과 같은 공개 척도를 사용하지만 항목의 대상을 다르게 계산합니다. 개인 후보의 맵 점수는 그 영웅 자신의 도구, 시너지 점수는 그 영웅이 직접 참여하는 동료 연결을 봅니다. 팀 점수는 입력한 팀 전체의 도구와 공백을 봅니다.</p>
+      <div class="callout"><p><strong>5점은 중립 기준입니다.</strong> 등록된 근거가 없다는 이유만으로 유리함을 가산하지 않습니다. 근거가 있는 기본 능력·구간 프로필과 편집 규칙이 만든 점수이며, 실제 경기 결과로 보정한 승률 예측 모델은 아닙니다.</p></div>
+      <p>개인 후보와 팀 점수는 같은 다섯 항목과 같은 공개 척도를 사용하지만 항목의 대상을 다르게 계산합니다. 개인 후보의 맵 점수는 그 영웅 자신의 도구, 시너지 점수는 그 영웅이 직접 참여하는 동료 연결을 봅니다. 팀 점수는 입력한 팀 전체의 도구와 공백을 봅니다. 둘 다 같은 기본/궁극기/특전 구분과 구간 출처를 사용합니다. 기동성·유지력 등 그래프의 축과 개별 평가 항목은 0~10을 유지하며, 최종 적합도만 1~9입니다.</p>
       <p class="small">같은 입력의 원점수를 바꾸지 않은 채 후보를 더 추가하거나 제거해도 공개 점수는 같습니다. 후보 목록 안에서 최고·최저를 다시 1~9로 맞추는 방식이 아닙니다.</p>
     </section>
 
@@ -28,7 +28,7 @@
       <h2><span class="number">02</span>다섯 항목을 합친 뒤, 고정된 척도로 변환</h2>
       <div class="table-wrap"><table><caption>각 항목은 0~10점 · 중립 5 · 소수 한 자리</caption><thead><tr><th>항목</th><th>가중치</th><th>계산 대상</th></tr></thead><tbody>
         <tr><th>상성</th><td class="nowrap">30</td><td>상대 도구에 대응하는지, 실제 상대 위협에 대한 공백이 있는지</td></tr>
-        <tr><th>맵</th><td class="nowrap">20</td><td>편집된 지형 분류와 선택 구간 계획에 영웅 도구가 맞는지</td></tr>
+        <tr><th>맵</th><td class="nowrap">20</td><td>검토된 정확한 맵·구간·공수와 기본 도구의 연결; 미검토 구간은 임시 규칙</td></tr>
         <tr><th>시너지</th><td class="nowrap">25</td><td>속도·진입·사거리·보호·이동 지원이 서로 연결되는지</td></tr>
         <tr><th>제약 대응</th><td class="nowrap">10</td><td>관측된 상대 구성에서 가장 큰 편집 제약</td></tr>
         <tr><th>통계</th><td class="nowrap">15</td><td>조건이 맞는 영웅 통계를 중립 쪽으로 축소한 보조 근거</td></tr>
@@ -55,24 +55,34 @@ rawScore = Σ(pᵢ × 가중치ᵢ) / Σ(사용한 가중치ᵢ)
     </section>
 
     <section id="factors">
-      <h2><span class="number">03</span>네 가지 규칙 항목의 원래 계산</h2>
-      <p>아래 가산·감산을 중립 5에 적용한 뒤 각 항목을 0~10으로 제한하고 소수 한 자리로 반올림합니다. 숫자는 현재 편집 규칙의 계수이며, 실제 경기에서 추정한 인과 효과나 승률 변화량이 아닙니다.</p>
+      <h2><span class="number">03</span>기본 규칙과 검토된 조건을 연결하는 방법</h2><p>먼저 기존 대응·연결 규칙을 계산하고, 확인된 기본 능력으로 설명할 수 있는 조건부 변화를 연결합니다. <strong>검토된 맵 프로필이 있는 구간은 기존 맵 계산을 완전히 대체</strong>합니다. 수치는 편집한 휴리스틱 계수이며 실제 경기의 인과 효과나 승률 변화량이 아닙니다.</p>
+<div class="callout"><p><strong>기본 능력 · 궁극기 · 선택 특전을 분리합니다.</strong> 상시 평가에는 근거가 있는 기본 능력만 넣습니다. 아군 견인·자기 이동을 적 끌어오기로 취급하지 않습니다. 궁극기와 선택 특전은 데이터에 남기되 기본 점수에 자동 가산하지 않습니다.</p><p><strong>unknown은 확인된 부재가 아닙니다.</strong> 현재 프로필이 보류한 능력을 과거 태그로 다시 확정하지 않습니다. 해당 기제는 중립으로 남기고, 명시적 부재가 확인된 경우에만 그 부재를 사용하는 조건을 검토합니다. 이것이 영웅 전체 점수를 무조건 5로 만든다는 뜻은 아닙니다. 프로필 자체가 없는 영웅·구간의 기존 태그는 임시 근거라고 표시합니다.</p></div>
+<p><code>contextEffects.delta</code>는 <strong>해당 항목의 0~10 단위</strong>입니다. 승률 %p나 최종 1~9점의 직접 변화가 아닙니다. 예를 들어 통계를 포함할 때 시너지 항목의 +1은 가중 평균에 +0.25, 공개 변환 전 값에 +0.625를 더합니다. 반올림·상하한 때문에 실제 표시 차이는 달라질 수 있습니다.</p>
+<div class="formula"><code>상성·시너지·제약: 최종 항목 = 반올림₁(clip(기존 항목 + 중복을 제거한 새 변화, 0, 10))
+검토된 맵: 최종 항목 = 반올림₁(5 + 검토된 구간 변화 합)
+각 항목의 표시 변화 = 기존 중립 이탈 + 새 변화 + 0~10 범위 조정
+마지막 항목 반올림 때문에 변화 합과 표시값에 최대 0.05 차이가 날 수 있음</code></div>
+<p class="small">개인 조건부 평가의 변화 합은 맵 ±2, 다른 항목 ±2.5를 넘으면 각 변화를 같은 비율로 축소합니다. 이후 기존 항목과 합칠 때 속도·진입·사거리·보호 연결의 중복 가산을 없애고, 제약은 더 큰 위험 하나만 반영합니다. 모든 항목은 최종 0~10 범위를 지킵니다.</p>
 
       <h3>상성 · 가중치 30</h3>
       <div class="table-wrap"><table><thead><tr><th>대상</th><th>원래 계산</th><th>해석</th></tr></thead><tbody>
-        <tr><th>개인 후보</th><td>5 + 0.7×U − 0.9×L + B</td><td>U: 후보가 상대 도구에 대응하는 상대 영웅 수. L: 상대가 후보 도구에 대응하는 상대 영웅 수. B: 상대 돌격의 편집 대응 목록에서 후보가 1순위면 +1.2, 그 밖의 등록 순위면 +0.6, 미등록이면 0.</td></tr>
+        <tr><th>개인 후보</th><td>5 + 0.7×U − 0.9×L + B</td><td>U: 후보가 상대 도구에 대응하는 상대 영웅 수. L: 상대가 후보 도구에 대응하는 상대 영웅 수. 수면→상대 정화 제약은 여기서 빼고 제약 항목에서만 계산합니다. B: 상대 돌격의 편집 대응 목록에서 후보가 1순위면 +1.2, 그 밖의 등록 순위면 +0.6, 미등록이면 0.</td></tr>
         <tr><th>팀</th><td>5 − 0.9×G + 0.6×A</td><td>G: 실제 상대 영웅이 연결된 대응 공백의 개수. A: 아군이 보유한 대응 도구 항목의 개수. 단순히 개선할 여지가 있다는 이유만으로 공백으로 감점하지 않습니다.</td></tr>
       </tbody></table></div>
-      <p class="small">같은 상대 한 명에 대한 대응 태그가 여러 개여도 그 상대에 대한 +0.7 또는 −0.9는 각각 한 번입니다. U와 L은 같은 상대에 대해 동시에 성립할 수 있습니다. 긴 시야 구간에서는 팀의 <code>poke-no-dive</code> 대응 보유 가산을 제외합니다.</p>
+      <p class="small">같은 상대 한 명에 대한 대응 태그가 여러 개여도 그 상대에 대한 +0.7 또는 −0.9는 각각 한 번입니다. U와 L은 같은 상대에 대해 동시에 성립할 수 있습니다. 검토된 긴 시야 구간에서는 팀의 <code>poke-no-dive</code> 대응 공백 감점과 대응 보유 가산을 제외합니다. 다이브 도구만으로 긴 접근 거리가 해결된다고 보지 않습니다.</p>
       <div class="formula"><code>현재 직접 도구 대응 쌍:
 다이브 → 포킹 / 방벽 파괴 → 방벽 / 진입 저지(anchor) → 다이브
 정화 → 수면 / 측면 → 방벽 / 고지 접근(vertical) → 방벽</code></div>
 
-      <h3>맵 · 가중치 20</h3>
+      <h3>상대 조건에서 추가하는 기제</h3><div class="table-wrap"><table><thead><tr><th>기제</th><th>기본 변화와 성립 조건</th></tr></thead><tbody><tr><th>적 위치 변경 + 순간 압박</th><td>두 기본 도구와 후속 공격 동료가 있을 때 상성 +0.6. 짧은 시야 또는 단계적 엄폐가 확인되면 +1.1. 상대 기본 방벽이 있으면 ×0.5. 후속 동료가 없으면 0. 밀치기와 당기기를 같은 후크 처치로 단정하지 않습니다.</td></tr><tr><th>치유 차단 기회</th><td>후보의 기본 치유 차단이 있고 상대의 자기 회복·아군 치유가 확인되면 상성 +min(1.1, 0.4×대상 수). 상대 기본 정화가 있으면 ×0.5. 실제 적중과 정화 사용 창이 필요합니다.</td></tr><tr><th>제어로 상대 진입 대응</th><td>후보의 기본 행동 제어와 상대의 기본 진입 도구가 확인되면 상성 +0.7. 도구의 범위·적중·후속은 관측하지 않습니다.</td></tr><tr><th>후보 진입의 제어 위험</th><td>후보의 기본 진입과 상대의 기본 행동 제어가 확인되면 제약 −0.8을 검토합니다. 기존 제약보다 약하면 다시 감점하지 않습니다.</td></tr></tbody></table></div><p class="small">팀 평가는 같은 기제에 해당하는 개인 효과 중 절댓값이 가장 큰 한 건만 반영합니다. 서로 다른 팀원에게 같은 관계가 있다는 이유로 반복 가산하지 않습니다. 위 계수는 개인의 항목별 상한 조정 전 값입니다.</p><h3>맵 · 정확한 맵·구간·공수를 연결</h3>
+<p>맵 ID·구간 ID·공격/수비/대칭이 모두 일치해야 검토 프로필을 사용합니다. 현재 <strong>159구간 중 24개에 부분 프로필</strong>이 있고, 135개는 미검토입니다. 18개 출처에서 확인한 시야·고지·엄폐·동선만 사용하며 빈 항목은 채우지 않습니다. 공격에 확인된 우회로를 수비의 안전한 접근로로 복사하지 않습니다.</p>
+<div class="callout warm"><p>서킷 2의 긴 시야와 3의 혼합 시야를 구분하고, 왕의 길 C는 마지막 구간이어도 고지 경합을 유지합니다. 아이헨 B의 계단과 할리우드 B의 승강기는 <strong>수직 이동기가 없어도 가능한 접근</strong>으로 기록합니다. 공격·수비라는 이름 자체에 고정 보너스는 없습니다.</p></div><div class="table-wrap"><table><caption>맵 변화 합은 ±2로 제한 · 중립 5에서 시작 · 알려지지 않은 기능과 지형은 해당 기제 중립</caption><thead><tr><th>확인된 구간 조건</th><th>개인 후보의 맵 변화</th></tr></thead><tbody><tr><th>긴 시야</th><td>원거리 도구가 있으면 +1.3. 없고 중거리 도구가 있으면 −0.4. 근거리만 확인됐으면 단계적 엄폐가 있을 때 −0.5, 그렇지 않으면 −1.3.</td></tr><tr><th>짧은 시야</th><td>근거리 도구 +0.9, 없으면 중거리 +0.3, 원거리만 확인되면 −0.5.</td></tr><tr><th>혼합 시야</th><td>중거리 도구 +0.6. 없으면 원거리 +0.5. 근거리만 확인됐고 단계적 엄폐가 있으면 +0.5, 그 외 0. 사거리 도구 중 해당 분기 한 번만 사용합니다.</td></tr><tr><th>고지 경합 + 직접 수직 이동</th><td>계단·승강기 접근이 확인되면 +0.4. 이동기 의존 접근이 명시되면 +1.2. 접근 종류가 미확인이면 +0.6. 실제 도달·후속 조건은 별도입니다.</td></tr><tr><th>고지 경합 + 수직 이동 부재 확인</th><td>이동기 의존 접근이 출처에 명시된 경우만 −1.1. 계단·승강기 또는 접근 종류 미확인이면 0. 능력 미확인은 확인된 부재로 바꾸지 않습니다.</td></tr><tr><th>측면 경로 + 자기 이동·진입 도구</th><td>+0.6. 같은 구간의 고지 접근을 이미 계산했다면 별개 경로를 입증하지 못하므로 추가 0.</td></tr><tr><th>노출된 접근·출처의 조건부 조언</th><td>실행 조건으로 표시합니다. 사거리·엄폐에서 계산한 노출 비용을 다시 감점하지 않으며, 출처 문장 자체에는 추가 점수를 붙이지 않습니다.</td></tr></tbody></table></div><p><strong>팀도 같은 구간 근거를 사용합니다.</strong> 사거리·수직 접근·측면 접근별로 확인된 개인 변화가 큰 순서의 최대 2명을 평균합니다. 미확인을 0으로 끼워 넣지 않고, 고지·측면 접근이 둘 다 양수면 큰 접근 기제 한 번만 유지합니다. 합계 ±2를 적용하고 중립 5에 더합니다. 이는 팀 전원의 이동 가능성이나 치유량을 뜻하지 않습니다.</p>
+<p>검토 프로필이 있으면 기존 맵 가산·구간 계획 가중을 함께 더하지 않습니다. 추천·전술의 지형 조건도 같은 프로필을 우선해, 예전 “긴 시야” 태그가 다른 구간의 설명을 되돌리지 않게 합니다. 통계는 구간·공수별 자료가 없으므로 동일 맵·영웅·티어에서는 그대로 유지합니다.</p>
+<details><summary>미검토 구간에서만 사용하는 임시 맵 규칙</summary>
       <div class="table-wrap"><table><caption>개인 후보는 자신의 도구, 팀은 입력된 인원의 도구를 계산합니다.</caption><thead><tr><th>지형·조건</th><th>개인 후보</th><th>팀</th></tr></thead><tbody>
         <tr><th>긴 시야</th><td>원거리 태그가 있으면 +2.0. 근접 태그가 있고 원거리 태그가 없으면 −1.5. 후보가 편집된 다이브 돌격이면 추가 −1.4.</td><td>원거리 인원 r에 대해 +min(2, 0.7×r). 돌격이 다이브 돌격이면 −1.4. r=0이며 입력 인원≥3이면 −1.2.</td></tr>
         <tr><th>고지 거점</th><td>직접 고지 접근 태그가 있으면 +1.6. 없고 근접 태그가 있으면 −1.2. 이 두 조건에 해당하지 않는 비기동 돌격이면 −0.8. 원거리 태그가 있으면 별도로 +0.7.</td><td>고지 접근 인원 m에 대해 +min(1.8, 0.6×m). 돌격이 편집된 기동 돌격 집합에 없으면 −0.8.</td></tr>
-        <tr><th>평지 거점</th><td>근접 태그 또는 편집된 근접 돌격이면 +1.3.</td><td>편집된 근접 돌격이면 +1.0.</td></tr>
+
         <tr><th>좁은 러시 거점</th><td>근접 태그 또는 근접 돌격이면 +1.8. 후보가 속도 지원 태그를 가지면 +1.0. 원거리 태그가 있고 근접 태그가 없으면 −0.8.</td><td>근접 돌격이면 +1.0. 팀에 속도 지원과 느린 돌격 태그가 모두 있으면 추가 +1.0.</td></tr>
         <tr><th>선택 구간의 계획 가중</th><td>팀이 계획의 모든 요구 태그를 채우고, 후보 자신도 요구 태그 중 하나 이상을 제공하는 계획만 사용.</td><td>팀이 계획의 모든 요구 태그를 채우는 계획을 사용.</td></tr>
       </tbody></table></div>
@@ -80,16 +90,16 @@ rawScore = Σ(pᵢ × 가중치ᵢ) / Σ(사용한 가중치ᵢ)
 계획 가중: 유리 +1 / 불리 −1 / 보통 0
 같은 계획 ID는 한 번만 사용. 요구 태그가 비어 있는 계획은 사용하지 않음.</code></div>
       <p>다른 팀원의 원거리·기동 인원을 개인 후보 자신의 능력으로 더하지 않습니다. 다른 맵에 속한 구간 ID를 입력하면 구간 조건을 비웁니다. 지형 분류는 편집된 규칙이며, 현재 화면의 엄폐와 공격·수비 동선을 실시간으로 측정한 결과가 아닙니다.</p>
-      <p class="small">현재 지형 분류: 서킷 로얄·아바나·정커타운은 긴 시야, 리장 타워 관제 센터 구간은 러시 거점, 등록된 혼합 맵 A거점은 고지·C화물은 평지입니다. 그 밖에는 일반 구간으로 취급합니다. 세부 경로와 최신 맵 개편을 모두 검증했다는 뜻은 아닙니다.</p>
+      <p class="small">현재 임시 분류도 등록된 정확한 구간을 먼저 확인합니다. 고지 태그가 있으면 고지, 긴 시야이면서 근접 공간이 아니면 장거리, 근접 공간 또는 좁은 입구면 러시형, 그 외는 일반 구간입니다. 맵 이름만으로 모든 구간을 장거리로 만들거나 모든 C구간을 평지로 만들지 않습니다. 구간이 없거나 다른 맵 소속이면 지형을 확정하지 않습니다.</p>
 
-      <h3>개인 후보의 시너지 · 가중치 25</h3>
+      </details><h3>개인 후보의 시너지 · 가중치 25</h3>
       <div class="callout warm"><p><strong>후보가 참여하는 연결만 계산합니다.</strong> 예를 들어 다른 두 팀원이 이미 속도·근접 시너지를 갖고 있어도 관련 없는 후보에게 그대로 보너스를 주지 않습니다. 팀 공통의 역할 공백도 모든 후보의 개인 시너지에 복사하지 않습니다.</p></div>
       <div class="table-wrap"><table><caption>중립 5에 아래 조건을 적용 · “또는” 태그 중 하나 이상이면 해당 도구를 보유한 것으로 판정</caption><thead><tr><th>연결</th><th>조건과 증감</th></tr></thead><tbody>
         <tr><th>속도·근접 연결</th><td>① 후보가 속도 지원이며 근접 동료≥2: +1.4. 그렇지 않으면 ② 동료 속도 지원이 있고 후보가 근접: +1.4. 이 둘에 해당하지 않으면 ③ 동료 속도 지원·근접 동료≥2·기동 가능한 지원 후보: +0.8. 이 세 분기는 한 번만 적용합니다.</td></tr>
-        <tr><th>후보가 직접 진입</th><td>후보가 다이브 돌격 집합 또는 다이브 태그를 보유: 후속 기동 동료 n이 있으면 +min(1.5, 0.6×n). n=0이며 다른 동료≥2이면 −1.4.</td></tr>
-        <tr><th>동료가 직접 진입</th><td>위 진입 후보 분기에 해당하지 않고 다이브 동료가 있을 때: 기동 후보 +1.2. 그렇지 않고 지원 후보가 원거리 조준·아군 순간이동·아군 위치 이동 도구 중 하나를 보유하면 +0.8. 이것도 아니며 근접 후보이면 −1.3. 세 분기는 한 번만 적용합니다.</td></tr>
+        <tr><th>후보가 직접 진입</th><td>후보가 다이브 돌격 집합 또는 다이브 태그를 보유: 후속 기동 동료 n이 있으면 +min(1.5, 0.6×n). n=0이며 다른 동료≥2이고 이동 부재를 확인할 수 있을 때만 −1.4. 프로필에서 미확인인 경우 감점을 보류합니다.</td></tr>
+        <tr><th>동료가 직접 진입</th><td>위 진입 후보 분기에 해당하지 않고 다이브 동료가 있을 때: 기동 후보 +1.2. 그렇지 않고 지원 후보가 원거리 조준·아군 순간이동·아군 위치 이동 도구 중 하나를 보유하면 +0.8. 이것도 아니며 근접 후보의 이동 부재가 확인되면 −1.3. 미확인이면 부재 감점을 보류합니다. 세 분기는 한 번만 적용합니다.</td></tr>
         <tr><th>원거리 연결</th><td>후보가 원거리이며, 동료도 한 명 이상 원거리 태그를 보유: +1.2.</td></tr>
-        <tr><th>후보와 원거리 동료의 거리 분리</th><td>후보가 근접이고 기동 도구가 없으며 원거리 동료≥2: −1.2.</td></tr>
+        <tr><th>후보와 원거리 동료의 거리 분리</th><td>후보가 근접이고 기동 부재가 확인됐으며 원거리 동료≥2: −1.2. 프로필에 이동 근거가 없다는 사실만으로 감점하지 않습니다.</td></tr>
         <tr><th>후보와 근접 본대의 거리 분리</th><td>후보가 원거리·비근접이고 동료 속도 지원이 있으며 근접 동료≥2: −1.1.</td></tr>
         <tr><th>보호·치유 연결</th><td>후보가 진입 저지·방벽·투사체 흡수 중 하나를 제공하고 지원 동료가 있으면 +0.5. 그렇지 않고 후보가 지원이며 등록 태그가 있고 보호 동료가 있으면 +0.5. 한 번만 적용합니다.</td></tr>
         <tr><th>이동 지원·강습 형태</th><td>후보가 이동 지원이고 다른 동료가 강습 형태이거나, 그 반대이면 +1.0.</td></tr>
@@ -99,7 +109,7 @@ rawScore = Σ(pᵢ × 가중치ᵢ) / Σ(사용한 가중치ᵢ)
       <h3>팀의 시너지 · 같은 가중치, 다른 대상</h3>
       <div class="table-wrap"><table><thead><tr><th>조건</th><th>증감</th></tr></thead><tbody>
         <tr><td>속도 지원 + 느린 돌격 + 근접 인원≥2</td><td>+1.3</td></tr>
-        <tr><td>다이브 돌격 + 다른 기동·후속 인원 n</td><td>n&gt;0이면 +min(1.2, 0.6×n), n=0이면 −1.2</td></tr>
+        <tr><td>다이브 돌격 + 다른 기동·후속 인원 n</td><td>n&gt;0이면 +min(1.2, 0.6×n). n=0이고 다른 동료의 이동 부재가 확인될 때만 −1.2; 미확인이면 보류</td></tr>
         <tr><td>원거리 인원≥2</td><td>+0.9</td></tr>
         <tr><td>보호 도구 + 지원 인원≥2</td><td>+0.5</td></tr>
         <tr><td>서로 다른 영웅의 이동 지원·강습 형태</td><td>+1.0</td></tr>
@@ -107,13 +117,15 @@ rawScore = Σ(pᵢ × 가중치ᵢ) / Σ(사용한 가중치ᵢ)
         <tr><td>돌격 없음, 입력 인원≥3</td><td>−0.7</td></tr>
         <tr><td>공격 역할 없음, 입력 인원≥3</td><td>−0.8</td></tr>
       </tbody></table></div>
-      <p class="small">팀의 후속 인원 판정은 다이브·측면·비행·고지 접근 태그를 사용합니다. 중복 영웅 ID는 제거하며, 빈 자리를 자동으로 영웅이나 태그로 채우지 않습니다.</p>
+      <p class="small">팀의 후속 인원 판정은 다이브·측면·비행·고지 접근과 자기 속도·점멸·자기 위치 이동·이탈·재합류 도구를 함께 봅니다. 중복 영웅 ID는 제거하며, 빈 자리를 자동으로 영웅이나 태그로 채우지 않습니다.</p>
 
-      <h3>제약 대응 · 가중치 10</h3>
+      <h3>자기 회복 · 치유 차단 · 정화는 한 번의 순변화</h3>
+<p>자기 회복을 가진 후보의 유지 조건을 시너지 항목에서 한 번 계산합니다. 치유 차단의 불리함과 정화의 완화를 합친 <code>self-recovery-support-load</code> 하나를 사용하므로, 같은 회복 제약을 다시 제약 항목에 중복 감점하지 않습니다.</p><div class="table-wrap"><table><thead><tr><th>조건</th><th>시너지 항목 변화</th></tr></thead><tbody><tr><th>상대 기본 치유 차단 없음 · 동료 기본 치유 있음</th><td>단계적 엄폐가 확인된 구간 +0.7, 그 외 +0.4</td></tr><tr><th>상대 기본 치유 차단 없음 · 동료 기본 치유 확인 안 됨</th><td>+0.2</td></tr><tr><th>상대 기본 치유 차단 있음 · 동료 기본 정화 확인 안 됨</th><td>−0.9</td></tr><tr><th>상대 기본 치유 차단 있음 · 동료 기본 정화 있음</th><td>−0.2 — 정화 보유를 자동 안전으로 보지 않음</td></tr></tbody></table></div><p>회복 시간·자원·엄폐, 차단 적중, 정화의 범위·쿨타임은 자동 관측하지 않습니다. 일반 치유와 같은 판정인지 확인하지 못한 체력 복구는 이 기제의 자기 회복으로 확정하지 않습니다. 팀은 개인 순변화 합×0.3을 ±0.7로 제한해 반영하며, 개인 회복량을 팀 치유량으로 합산하지 않습니다.</p><h3>제약 대응 · 가중치 10</h3>
       <div class="formula"><code>제약 항목 = 5 − max(적용되는 편집 제약)
 편집 대응 목록 1순위 상대: 2.5 / 그 밖의 등록 상대: 1.2
 윈스턴 후보에 자리야·바스티온·리퍼·젠야타가 모두 상대편: 4.0
-수면 보유 영웅에 상대 정화 태그: 1.2</code></div>
+수면 보유 영웅에 상대 정화 태그: 1.2
+확인된 기본 진입에 상대 기본 행동 제어: 0.8 (기존보다 큰 경우만)</code></div>
       <p>여러 제약이 있어도 합산하지 않고 가장 큰 감점 하나를 사용합니다. 개인 후보는 그 영웅 한 명의 제약만, 팀은 모든 입력 영웅의 제약 중 가장 큰 값을 봅니다. 미등록 카운터는 유리함으로 바꾸지 않으며, 등록된 제약이 없으면 중립 5입니다.</p>
     </section>
 
@@ -176,7 +188,7 @@ D = 신뢰도 높음 2.0 / 보통 1.75 / 낮음 1.25</code></div>
 
     <section id="examples">
       <h2><span class="number">05</span>숫자로 확인하는 계산 예시</h2>
-      <p>아래 수치는 공식을 설명하기 위해 만든 입력입니다. 특정 영웅이나 현재 실제 맵의 승률이라고 주장하지 않습니다. 표의 출력은 현재 엔진 함수로 직접 계산해 확인했습니다.</p>
+      <p>A~D는 공식을 설명하는 가상 입력, E~G는 저장된 실제 번들로 실행한 통제 시나리오입니다. 모두 현재 엔진 함수로 재계산했고, 실제 경기 결과나 현재 경기의 승리 확률이라고 주장하지 않습니다.</p>
       <h3>예시 A · 통계의 유무</h3>
       <div class="table-wrap"><table><thead><tr><th>상성</th><th>맵</th><th>시너지</th><th>제약</th><th>통계</th></tr></thead><tbody><tr><td>6.0×30</td><td>7.0×20</td><td>5.5×25</td><td>4.0×10</td><td>5.5×15</td></tr></tbody></table></div>
       <div class="two-col"><div class="example"><h3>통계 포함</h3><p>(180 + 140 + 137.5 + 40 + 82.5) / 100 = <strong>5.8</strong></p><p>5 + (5.8 − 5)×2.5 = <span class="result">7.0점</span></p></div><div class="example"><h3>같은 네 항목, 통계 미포함</h3><p>(180 + 140 + 137.5 + 40) / 85 = <strong>5.852941…</strong></p><p>변환·반올림 결과 <span class="result">7.1점</span></p></div></div>
@@ -191,15 +203,12 @@ D = 신뢰도 높음 2.0 / 보통 1.75 / 낮음 1.25</code></div>
       <h3>예시 D · 세 명의 팀 통계만 있는 경우</h3>
       <div class="example"><p>5명 중 통계 사용 가능한 3명의 보조 점수가 6.0·5.6·4.4라면 평균은 5.333333…입니다.</p><p>팀 통계 = 5 + (5.333333…−5)×(3/5) = <strong>5.2점</strong>. 나머지 네 항목이 모두 5라면 rawScore=5.03 → 공개 <strong>5.1점</strong>.</p></div>
 
-      <h3>예시 E · 현재 번들에서 같은 돌격 자리를 비교</h3>
-      <p>왕의 길 공격 C화물 구간, 골드·경쟁전·아시아·PC·역할 고정을 입력했습니다. 동료는 리퍼·메이·루시우·모이라, 상대는 시그마·애쉬·위도우메이커·아나·바티스트입니다. 같은 돌격 자리에 라인하르트 또는 시그마를 넣은 <strong>엔진 재현 시나리오</strong>이며, 실제 경기 결과를 측정한 비교는 아닙니다.</p>
-      <div class="table-wrap"><table><thead><tr><th>후보</th><th>상성 (30%)</th><th>맵 (20%)</th><th>시너지 (25%)</th><th>제약 (10%)</th><th>통계 (15%)</th><th>rawScore</th><th>공개</th></tr></thead><tbody>
-        <tr><th>라인하르트</th><td>4.1</td><td>6.3</td><td>6.9</td><td>5.0</td><td>5.2</td><td>5.495</td><td><strong>6.2</strong></td></tr>
-        <tr><th>시그마</th><td>4.1</td><td>5.0</td><td>4.4</td><td>5.0</td><td>5.1</td><td>4.595</td><td><strong>4.0</strong></td></tr>
-      </tbody></table></div>
-      <p class="small">이 입력에서는 개인의 근접 전개·동료 연결 항목이 차이를 만듭니다. 동료끼리 이미 있는 근접 시너지 보너스를 모든 돌격 후보에게 똑같이 주지 않습니다. 두 통계 항목 모두 미공개 맵×골드 범위를 추정한 낮은 신뢰도의 보조값입니다. 다른 맵·구간·동료·상대로 입력하면 결과도 달라집니다.</p>
-
-      <div class="calculator"><h3>가중 평균을 직접 바꿔보기</h3><p class="small">영웅 도구나 실제 승률을 계산하는 입력창이 아니라, 위에서 계산된 항목 점수의 가중 평균과 공개 변환을 확인하는 도구입니다. 항목 입력은 0~10으로 제한하고 소수 한 자리로 반올림합니다.</p>
+      <h3>예시 E · 왕의 길 C의 같은 돌격 자리 재계산</h3>
+<p>왕의 길 공격 C화물, 골드·경쟁전·아시아·PC·역할 고정입니다. 동료는 리퍼·메이·루시우·모이라, 상대는 시그마·애쉬·위도우메이커·아나·바티스트입니다. 같은 돌격 자리에 라인하르트 또는 시그마를 넣었습니다. 마지막 구간을 평지로 일괄 분류하지 않고 <strong>출처에 명시된 고지 경합</strong>을 사용합니다.</p><div class="table-wrap"><table><thead><tr><th>후보</th><th>상성 (30)</th><th>맵 (20)</th><th>시너지 (25)</th><th>제약 (10)</th><th>통계 (15)</th><th>rawScore</th><th>공개</th></tr></thead><tbody><tr><th>라인하르트</th><td>2.6</td><td>5.0</td><td>8.1</td><td>5.0</td><td>5.2</td><td>5.085</td><td><strong>5.2</strong></td></tr><tr><th>시그마</th><td>2.3</td><td>5.0</td><td>5.5</td><td>5.0</td><td>5.1</td><td>4.33</td><td><strong>3.3</strong></td></tr></tbody></table></div><p class="formula"><code>라인하르트: (2.6×30 + 5.0×20 + 8.1×25 + 5.0×10 + 5.2×15) / 100 = 5.085 → 5.2점</code></p><p class="formula"><code>시그마: (2.3×30 + 5.0×20 + 5.5×25 + 5.0×10 + 5.1×15) / 100 = 4.33 → 3.3점</code></p><p class="small">두 후보의 맵 항목이 모두 중립이라고 같은 능력이라는 뜻은 아닙니다. 이 부분 프로필에는 해당 후보에게 숫자로 반영할 고지 접근·사거리 조건이 충분하지 않습니다. 개인의 동료 연결과 상대 대응 조건은 별도로 달라집니다. 통계는 같은 원본의 맵×골드 교차 추정이며 낮은 신뢰도입니다.</p>
+<h3>예시 F · 서킷 2·3구간을 바꾸면 무엇이 달라지나요?</h3>
+<p>후보는 로드호그, 동료는 애쉬·트레이서·아나·키리코, 상대는 시그마·위도우메이커·메이·바티스트·젠야타입니다. 골드 등 나머지 입력을 고정하고 공격 2체크와 공격 3체크만 바꿉니다.</p><div class="table-wrap"><table><thead><tr><th>구간 · 평가 대상</th><th>상성</th><th>맵</th><th>시너지</th><th>제약</th><th>통계</th><th>rawScore</th><th>공개</th></tr></thead><tbody><tr><th>공격 2 · 로드호그 개인</th><td>5.6</td><td>4.6</td><td>5.7</td><td>5.0</td><td>4.3</td><td>5.17</td><td><strong>5.4</strong></td></tr><tr><th>공격 2 · 아군 팀</th><td>7.9</td><td>6.9</td><td>6.3</td><td>4.2</td><td>4.8</td><td>6.465</td><td><strong>8.7</strong></td></tr><tr><th>공격 3 · 로드호그 개인</th><td>5.6</td><td>5.6</td><td>5.7</td><td>5.0</td><td>4.3</td><td>5.37</td><td><strong>5.9</strong></td></tr><tr><th>공격 3 · 아군 팀</th><td>8.5</td><td>6.2</td><td>6.3</td><td>4.2</td><td>4.8</td><td>6.505</td><td><strong>8.8</strong></td></tr></tbody></table></div><p>로드호그 개인 맵 항목은 2구간의 긴 시야에서 중거리 도구 −0.4, 3구간의 혼합 시야에서 중거리 도구 +0.6을 반영합니다. 수직 이동 부재만으로 별도 감점하지 않습니다. <strong>통계는 두 구간에서 같습니다.</strong> 이 통계 원본에는 구간·공수별 승률이 없습니다. 팀은 같은 출처를 사용하되 여러 동료의 확인된 도구를 계산하므로 개인과 같은 점수일 필요는 없습니다.</p>
+<h3>예시 G · 회복 기제만 따로 읽기</h3>
+<p>서킷 공격 3, 로드호그와 단계적 엄폐 조건을 고정합니다. 아래는 최종 점수 비교가 아니라 시너지 항목의 <strong>자기 회복 순변화 하나</strong>입니다.</p><div class="table-wrap"><table><thead><tr><th>구성 조건</th><th>동료</th><th>상대</th><th>해당 기제 delta</th></tr></thead><tbody><tr><th>상대 기본 치유 차단 없음</th><td>애쉬 · 트레이서 · 바티스트 · 젠야타</td><td>시그마 · 위도우메이커 · 메이 · 바티스트 · 젠야타</td><td>+0.7</td></tr><tr><th>상대 아나 · 아군 기본 정화 없음</th><td>애쉬 · 트레이서 · 바티스트 · 젠야타</td><td>시그마 · 위도우메이커 · 메이 · 바티스트 · 아나</td><td>-0.9</td></tr><tr><th>상대 아나 · 아군 키리코</th><td>애쉬 · 트레이서 · 바티스트 · 키리코</td><td>시그마 · 위도우메이커 · 메이 · 바티스트 · 아나</td><td>-0.2</td></tr></tbody></table></div><p class="small">상대를 바꾸면 다른 상성 기제도 달라질 수 있으므로 위 차이를 최종 적합도의 순수 인과 효과라고 주장하지 않습니다. 정화가 있더라도 실제로 사용 가능하고 적중했는지는 별도 조건입니다.</p><div class="calculator"><h3>가중 평균을 직접 바꿔보기</h3><div class="presets" aria-label="재계산한 예시 불러오기"><button type="button" data-score-preset="kings-reinhardt" aria-pressed="false">왕의 길 C · 라인하르트</button><button type="button" data-score-preset="kings-sigma" aria-pressed="false">왕의 길 C · 시그마</button><button type="button" data-score-preset="circuit-2" aria-pressed="false">서킷 2 · 로드호그</button><button type="button" data-score-preset="circuit-3" aria-pressed="false">서킷 3 · 로드호그</button></div><p class="small">영웅 도구나 실제 승률을 계산하는 입력창이 아니라, 위에서 계산된 항목 점수의 가중 평균과 공개 변환을 확인하는 도구입니다. 항목 입력은 0~10으로 제한하고 소수 한 자리로 반올림합니다.</p>
         <div class="inputs"><label>상성<small>가중치 30</small><input id="v-matchup" type="number" min="0" max="10" step="0.1" value="6"></label><label>맵<small>가중치 20</small><input id="v-map" type="number" min="0" max="10" step="0.1" value="7"></label><label>시너지<small>가중치 25</small><input id="v-synergy" type="number" min="0" max="10" step="0.1" value="5.5"></label><label>제약 대응<small>가중치 10</small><input id="v-counter" type="number" min="0" max="10" step="0.1" value="4"></label><label>통계<small>가중치 15</small><input id="v-statistics" type="number" min="0" max="10" step="0.1" value="5.5"></label></div>
         <label class="toggle"><input id="include-statistics" type="checkbox" checked> 사용 가능한 통계가 있음</label><button id="reset-calculator" type="button">예시 A로 되돌리기</button>
         <p id="calc-result" class="calc-result" aria-live="polite">원점수 5.8 · 분모 100 · 공개 점수 <strong>7.0</strong></p>
@@ -211,19 +220,16 @@ D = 신뢰도 높음 2.0 / 보통 1.75 / 낮음 1.25</code></div>
       <ul>
         <li><strong>현재 저장된 통계:</strong> 40개 범위·2,120개 영웅 수치 레코드입니다. 40개 범위 모두 표본 수와 원본 집계일은 미공개로 저장되어 있습니다. 2,120은 경기 표본 수가 아닙니다.</li>
         <li><strong>실제 표본과 패치:</strong> 신뢰구간, 경기 수에 따른 표본 가중치, 정확한 집계 기간과 해당 패치를 확인할 수 없습니다. 수집 날짜를 원본 집계 날짜로 쓰지 않습니다.</li>
-        <li><strong>그랜드마스터·챔피언:</strong> 통합 제공된 원본 범위는 합산으로 처리합니다. 챔피언 단독 실측값으로 나누지 않습니다.</li>
-        <li><strong>태그와 편집 규칙:</strong> 현재 등록된 대응 관계는 완전한 카운터 목록이 아닙니다. 치유 시야·사거리·쿨타임·궁극기·플레이어 숙련도·실시간 위치를 점수 공식이 직접 측정하지 않습니다.</li>
+        <li><strong>그랜드마스터·챔피언:</strong> 공식에서 통합 제공한 수치를 그대로 사용합니다. 챔피언 단독 실측값으로 나누지 않습니다.</li>
+        <li><strong>검토 범위:</strong> 53영웅의 능력·강약점 프로필과 24/159구간의 부분 지형 프로필입니다. 나머지 135구간을 검토했다고 표시하지 않습니다. 맵 출처의 자막 문맥을 읽었으며 영상 화면 시청·실측·현재 패치 전체 대조는 하지 않았습니다. 모든 전장 프로필의 currentPatchVerified는 false입니다.</li><li><strong>태그와 편집 규칙:</strong> 현재 등록된 대응 관계는 완전한 카운터 목록이 아닙니다. 치유 시야·사거리·쿨타임·궁극기·플레이어 숙련도·실시간 위치를 점수 공식이 직접 측정하지 않습니다.</li>
         <li><strong>미완성 입력:</strong> 중복 영웅은 제거하고 빈 자리는 채우지 않습니다. 미등록 개인 후보의 네 규칙 항목은 중립 5로 유지하며 통계를 추가하지 않습니다. 5대5 미완성, 미등록 영웅과 지형 근거 부족은 불확실성 설명에 표시합니다.</li>
-        <li><strong>코드 검증:</strong> 가중 평균·포화 경계·통계 유무·quality 축소·교차 추정 예시를 현재 엔진 함수로 실행해 확인했습니다. 이 검증은 계산 구현의 일치를 확인한 것이며 추천이 실제 경기에서 승률을 높인다는 성능 검증은 아닙니다.</li>
+        <li><strong>코드 검증:</strong> 가중 평균·통계 유무·quality 축소·교차 추정 예시와 E~G의 개인·팀 점수를 현재 엔진 함수로 실행해 확인했습니다. 동일 맵의 구간 변경에서 통계 항목 불변, 항목 변화 합과 최종 항목의 일치도 확인했습니다. 이 검증은 계산 구현의 일치를 확인한 것이며 추천이 실제 경기에서 승률을 높인다는 성능 검증은 아닙니다.</li>
       </ul>
       <div class="callout"><p>공개 점수를 읽을 때는 <strong>왜 가산·감산됐는지, 어떤 실행 조건이 필요한지, 통계가 직접 관측인지 추정·대체인지</strong>를 함께 확인하세요. 같은 점수라도 원인과 불확실성이 다를 수 있습니다.</p></div>
       <p class="small">공식 통계 확인: <a href="https://overwatch.blizzard.com/ko-kr/rates/" target="_blank" rel="noreferrer">Blizzard 영웅 통계</a>. 보고서는 이 페이지의 최신 수치를 별도로 재수집한 것이 아니라 앱에 저장된 스냅샷과 현재 엔진 코드를 설명합니다.</p>
     </section>
   </main>
-  <footer>
-    <p>기준 구현: <code>packages/engine/src/grade.ts</code>, <code>statistics.ts</code>, <code>matchups.ts</code>, <code>recommend.ts</code>. 이 보고서는 앱 소스를 변경하지 않고 작성했습니다.</p>
-    <p>확인 시점 소스 SHA-256:<br>grade.ts <code>0dbec4d710135d9ddb42e4a3af1941277bfb18117f4ab2fd3800072d29eb976c</code><br>statistics.ts <code>78a2e808d68833ca85058eb329f8556a7f6851a95876fc3618d5751e26275f7f</code><br>통계 스냅샷 <code>672b130b2ae4b72f5e9f06427a490b481fb0c1a6ded85a50671e29cb10e25e5c</code></p>
-  </footer>
+  <footer><p>이 설명은 현재 공유 엔진과 저장된 번들을 기준으로 생성했습니다. 별도 배포 파일의 버전이나 실전 검증 결과를 주장하는 문서는 아닙니다.</p><p>예시 재현 시각(UTC): <code>2026-09-30T15:23:53.312Z</code> — 통계 수집 시각 +60초로 고정했습니다. 실제 원본 집계일은 미공개입니다. 문서 생성: <code>2026-10-01T04:15:35.643Z</code>.</p><p>사실 출처의 예: <a href="https://www.youtube.com/watch?v=q-Z9hj6pTQs&amp;t=2303" target="_blank" rel="noreferrer">왕의 길 C 자막 문맥 · 38:23~39:05</a> · <a href="https://www.youtube.com/watch?v=0AT-G6wH7VQ&amp;t=405" target="_blank" rel="noreferrer">서킷 3 자막 문맥 · 6:45~9:35</a> · <a href="https://overwatch.blizzard.com/en-us/news/patch-notes/live/2024/10/" target="_blank" rel="noreferrer">공식 서킷 지형 변경 기록</a></p><details class="provenance"><summary>재현에 사용한 코드·자료 SHA-256</summary><ul><li><span>apps/web/src/knowledge.ts</span><code>71f5e4e332a87597a8edfc91df2e4e0b2012007f189d9010e52a3a4fe6edbb1e</code></li><li><span>knowledge/runtime/knowledge.json</span><code>495dd9d1170f3a6e5460d46054f8a80410fceeac1941e0708498d31afa622cc7</code></li><li><span>knowledge/runtime/statistics.json</span><code>672b130b2ae4b72f5e9f06427a490b481fb0c1a6ded85a50671e29cb10e25e5c</code></li><li><span>knowledge/runtime/reviewed-traits.json</span><code>5d6ecf6484912157e67f1d83d4563f8c518823e8a0905ef75ea15224ed543336</code></li><li><span>knowledge/runtime/reviewed-lessons.json</span><code>898f7206de77cc93c25de577655ba3a456fb9447b2f33d579e42a1ec15febd2d</code></li><li><span>knowledge/runtime/hero-profiles.json</span><code>89eeaf827edc9ef8ebf83cbea9802d39f255ab9dfd37d51aa85ead9cea600828</code></li><li><span>knowledge/runtime/map-profiles.json</span><code>7c521a8d61604c4ea7eb3033649d9281dbc27a8bb26942950ef55a1125a1f6f6</code></li><li><span>packages/engine/src/grade.ts</span><code>b50631480a1f8765640e08c0c13cfddbaecb0ce806b994dce38eb1dbaa0026a9</code></li><li><span>packages/engine/src/conditional-context.ts</span><code>96aa0663cf41f83ec0c8a18b5e988a4ece9f21e7add55230bd9d63ba42226ad9</code></li><li><span>packages/engine/src/statistics.ts</span><code>78a2e808d68833ca85058eb329f8556a7f6851a95876fc3618d5751e26275f7f</code></li><li><span>packages/engine/src/matchups.ts</span><code>5e59ddd718ce03068700c420f978dfc4e87c19017ccbfd64d36ce4d6d1726cbd</code></li><li><span>packages/engine/src/recommend.ts</span><code>991b314b90fbcc8dcdc425bf6d0897e6b20b0518b318820a5b6f9082278da979</code></li><li><span>packages/engine/src/tactics.ts</span><code>2c0e766b0947bd3359f43a964ce1a7e9decf61264634db9c5108d0f188de7293</code></li><li><span>packages/engine/src/shape.ts</span><code>7451eb77f9e515a4ccb0a4e7eeff95f6b8658bc0f1bc78a62d1e12840acee174</code></li><li><span>packages/engine/src/lessons.ts</span><code>d535180f9dca697adb72a591a0c2e744142369329a375d07a31440a71fa085d7</code></li></ul></details><p class="small">해시는 이 설명을 재현한 파일의 식별값입니다. 원본의 진실성이나 실제 경기 성능을 증명하는 인증은 아닙니다. 외부 영상 자막 원문·사적 경로는 이 보고서에 포함하지 않았습니다.</p></footer>
 </article>
 <script src="score-guide.js" defer></script>
 </body>
