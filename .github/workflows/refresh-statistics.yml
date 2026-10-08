@@ -1,0 +1,49 @@
+name: Refresh official Overwatch statistics
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: official-statistics-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test validation, source scope and failure handling
+        run: node --test .github/scripts/refresh-statistics.test.mjs
+      - name: Validate the existing snapshot without network or writes
+        run: node .github/scripts/refresh-statistics.mjs --validate
+      - name: Refresh reviewed public scopes
+        run: node .github/scripts/refresh-statistics.mjs --refresh
+      - name: Validate the completed snapshot
+        run: node .github/scripts/refresh-statistics.mjs --validate
+      - name: Commit only validated statistics and request a Pages build
+        env:
+          REFRESH_BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- data/statistics-snapshot.json; then
+            echo "No statistics changed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- data/statistics-snapshot.json
+          git commit -m "Refresh official Overwatch statistics"
+          git push origin "HEAD:${REFRESH_BRANCH}"
+          # GITHUB_TOKEN pushes do not trigger Pages. Explicitly request the existing legacy build.
+          # https://docs.github.com/en/rest/pages/pages#request-a-github-pages-build
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds"
