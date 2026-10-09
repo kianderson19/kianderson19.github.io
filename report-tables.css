@@ -1,0 +1,16 @@
+/* Reports follow the document scroll. Wide tables become labelled row cards. */
+.table-wrap, .scroll { min-width: 0; max-width: 100%; max-height: none; overflow: visible; }
+.table-wrap table, .scroll table { width: 100%; min-width: 0; table-layout: fixed; }
+.table-wrap th, .table-wrap td, .scroll th, .scroll td { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.table-wrap th, .scroll th { position: static; }
+
+@media (max-width: 840px) {
+  .table-wrap table, .scroll table { display: block; }
+  .table-wrap caption, .scroll caption { display: block; width: 100%; }
+  .table-wrap thead, .scroll thead { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .table-wrap tbody, .scroll tbody { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 12px; }
+  .table-wrap tbody tr, .scroll tbody tr { display: block; min-width: 0; border: 1px solid var(--line, #30434d); background: var(--soft, #14222c); }
+  .table-wrap tbody th, .table-wrap tbody td, .scroll tbody th, .scroll tbody td { display: block; width: 100%; padding: 11px 13px; border-bottom: 1px solid var(--line, #30434d); text-align: left; }
+  .table-wrap tbody tr > :last-child, .scroll tbody tr > :last-child { border-bottom: 0; }
+  .table-wrap tbody [data-label]::before, .scroll tbody [data-label]::before { content: attr(data-label); display: block; margin-bottom: 5px; color: var(--muted, #91a8ba); font-size: 10px; font-weight: 500; line-height: 1.5; }
+}
