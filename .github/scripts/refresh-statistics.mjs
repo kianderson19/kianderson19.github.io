@@ -8,6 +8,8 @@ import { setTimeout as sleep } from "node:timers/promises";
 export const ORIGIN = "https://overwatch.blizzard.com";
 export const API_PATH = "/ko-kr/rates/data/";
 export const FAQ = `${ORIGIN}/en-us/rates/`;
+export const COMPETITIVE_RQ = "1";
+const HISTORICAL_COMPETITIVE_RQ = "2";
 export const HERO_IDS = Object.freeze([
   "dmon", "dva", "genji", "domina", "doctrine", "doomfist", "ramattra", "lifeweaver",
   "reinhardt", "wrecking-ball", "roadhog", "lucio", "reaper", "mauga", "mercy", "mei",
@@ -33,7 +35,10 @@ export const EXPECTED_SCOPES = (MAP_IDS.length + 1) * Object.keys(TIERS).length 
 const FILTER_KEYS = ["input", "map", "region", "role", "rq", "tier"];
 const knownHeroes = new Set(HERO_IDS);
 const tierById = new Map(Object.keys(TIERS).map(tier => [tier.toLowerCase(), tier]));
-const id = request => `${request.rq}/${request.map}/${request.tier}`;
+const isCompetitive = rq => rq === COMPETITIVE_RQ || rq === HISTORICAL_COMPETITIVE_RQ;
+// Historical rq=2 observations remain identified by their original URL/time,
+// but new rq=1 observations replace that same competitive/map/tier scope.
+const id = request => `${isCompetitive(request.rq) ? "competitive" : "quickplay"}/${request.map}/${request.tier}`;
 const assert = (condition, message) => { if (!condition) throw new ValidationError(message); };
 
 export class ValidationError extends Error { name = "ValidationError"; }
@@ -45,15 +50,15 @@ export class HttpFailure extends Error {
 export function requestPlan() {
   const tiers = Object.keys(TIERS);
   return [
-    ...tiers.map(tier => makeRequest("all-maps", tier, "2")),
-    ...MAP_IDS.flatMap(map => tiers.map(tier => makeRequest(map, tier, "2"))),
-    makeRequest("all-maps", "All", "0"), // Observed Quick Play role queue, not rq=1.
+    ...tiers.map(tier => makeRequest("all-maps", tier, COMPETITIVE_RQ)),
+    ...MAP_IDS.flatMap(map => tiers.map(tier => makeRequest(map, tier, COMPETITIVE_RQ))),
+    makeRequest("all-maps", "All", "0"),
   ];
 }
 export function makeRequest(map, tier, rq) {
   assert(map === "all-maps" || MAP_IDS.includes(map), "Unreviewed map inventory");
   assert(Object.hasOwn(TIERS, tier), "Unreviewed tier");
-  assert(rq === "2" || (rq === "0" && map === "all-maps" && tier === "All"), "Unreviewed queue scope");
+  assert(isCompetitive(rq) || (rq === "0" && map === "all-maps" && tier === "All"), "Unreviewed queue scope");
   const selected = { input: "PC", map, region: "Asia", role: "All", rq, tier };
   const url = new URL(API_PATH, ORIGIN);
   url.search = new URLSearchParams(selected).toString();
@@ -86,7 +91,8 @@ export function decodeResponse(payload, request, collectedAt) {
   const selected = payload?.rates?.selected;
   assert(selected && typeof selected === "object" && !Array.isArray(selected), "Missing selected scope echo");
   assert(Object.keys(selected).sort().join() === [...FILTER_KEYS].sort().join(), "Selected filter keys changed");
-  assert(FILTER_KEYS.every(key => selected[key] === request.selected[key]), "Selected scope mismatch");
+  const mismatched = FILTER_KEYS.filter(key => selected[key] !== request.selected[key]);
+  assert(!mismatched.length, `Selected scope mismatch (${mismatched.map(key => `${key}: requested ${request.selected[key]}, received ${String(selected[key])}`).join("; ")}); publisher filter contract changed; snapshot preserved`);
   const rows = payload?.rates?.rates;
   assert(Array.isArray(rows) && rows.length === HERO_IDS.length, "Hero inventory changed; manual roster review required");
   const seen = new Set();
@@ -111,7 +117,7 @@ export function validateSnapshot(snapshot) {
     assert(!observed.has(key) && planned.has(key), "Duplicate or unexpected stored scope");
     observed.add(key);
     assert(scope.mapId === (request.map === "all-maps" ? null : request.map) && scope.tier === request.tier.toLowerCase(), "Stored map/tier disagrees with its source URL");
-    assert(scope.queue === (request.rq === "2" ? "competitive" : "quickplay") && scope.queueMode === "role-queue" && scope.region === "asia" && scope.platform === "pc", "Stored filters disagree with source request");
+    assert(scope.queue === (isCompetitive(request.rq) ? "competitive" : "quickplay") && scope.queueMode === "role-queue" && scope.region === "asia" && scope.platform === "pc", "Stored filters disagree with source request");
     assert(scope.sourceKind === "blizzard" && scope.sampleSize === null && scope.dataDate === null && scope.patch === null && scope.season === null, "Undisclosed metadata must stay undisclosed");
     assert(scope.winRateMetric === "publisher-winrate" && scope.mirrorHandling === "not-disclosed" && scope.pickRateUnit === "hero-playtime-usage" && scope.definitionSourceUrl === FAQ, "Unsupported rate definition or invented mirror/sample semantics");
     assert(validDate(scope.collectedAt) && Date.parse(scope.collectedAt) <= Date.parse(snapshot.generatedAt), "Invalid scope retrieval time");
@@ -133,15 +139,14 @@ export function validateSnapshot(snapshot) {
   coverage.unavailable.forEach(gap => {
     const request = sourceRequest(gap.sourceUrl), key = id(request);
     assert(planned.has(key) && !observed.has(key) && !gaps.has(key), "Overlapping or duplicate retrieval gap");
-    assert(gap.mapId === (request.map === "all-maps" ? null : request.map) && gap.tier === request.tier.toLowerCase() && gap.queue === (request.rq === "2" ? "competitive" : "quickplay"), "Gap filters disagree with URL");
+    assert(gap.mapId === (request.map === "all-maps" ? null : request.map) && gap.tier === request.tier.toLowerCase() && gap.queue === (isCompetitive(request.rq) ? "competitive" : "quickplay"), "Gap filters disagree with URL");
     assert(typeof gap.reason === "string" && gap.reason.length > 0 && validDate(gap.observedAt), "Gap requires a transport observation, not fabricated hero values");
     gaps.add(key);
   });
   return { heroes: snapshot.heroes.length, observedScopes: observed.size, expectedScopes: planned.size, values: snapshot.values.length, gaps: gaps.size };
 }
 
-async function limitedJSON(response) {
-  assert(/json/i.test(response.headers.get("content-type") ?? ""), "Response is not JSON");
+async function limitedBody(response) {
   const limit = 2_000_000;
   const declared = Number(response.headers.get("content-length"));
   assert(!Number.isFinite(declared) || declared <= limit, "Response exceeds size limit");
@@ -154,12 +159,48 @@ async function limitedJSON(response) {
     if (bytes > limit) { await reader.cancel(); throw new ValidationError("Response exceeds size limit"); }
     chunks.push(value);
   }
-  try { return JSON.parse(Buffer.concat(chunks).toString("utf8")); }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+async function limitedJSON(response) {
+  assert(/json/i.test(response.headers.get("content-type") ?? ""), "Response is not JSON");
+  const body = await limitedBody(response);
+  try { return JSON.parse(body); }
   catch { throw new ValidationError("Invalid source JSON"); }
 }
 
+export function validateQueueContract(html) {
+  assert(typeof html === "string", "Official queue contract is not HTML");
+  const select = html.match(/<select\b(?=[^>]*\bid=["']filter-rq-select["'])[^>]*>([\s\S]*?)<\/select>/i);
+  assert(select, "Official queue dropdown is missing; publisher filter contract review required");
+  const modes = new Map();
+  for (const option of select[1].matchAll(/<option\b([^>]*)>([\s\S]*?)<\/option>/gi)) {
+    const value = option[1].match(/\bvalue=["']([^"']+)["']/i)?.[1];
+    const title = option[1].match(/\bdata-title=["']([^"']+)["']/i)?.[1] ?? option[2].replace(/<[^>]*>/g, "").trim();
+    if (title === "경쟁전 - 역할 고정" || title === "빠른 대전 - 역할 고정") {
+      assert(value && !modes.has(title), "Ambiguous official queue labels; publisher filter contract review required");
+      modes.set(title, value);
+    }
+  }
+  assert(modes.get("경쟁전 - 역할 고정") === COMPETITIVE_RQ && modes.get("빠른 대전 - 역할 고정") === "0",
+    `Official queue contract changed: competitive=${String(modes.get("경쟁전 - 역할 고정"))}, quickplay=${String(modes.get("빠른 대전 - 역할 고정"))}; expected ${COMPETITIVE_RQ}/0; snapshot preserved until reviewed`);
+  return { competitive: COMPETITIVE_RQ, quickplay: "0" };
+}
+
+export async function verifyOfficialQueueContract() {
+  const sourceUrl = `${ORIGIN}/ko-kr/rates/`;
+  const response = await fetch(sourceUrl, {
+    redirect: "manual", signal: AbortSignal.timeout(30_000),
+    headers: { Accept: "text/html", "User-Agent": "JohapStatisticsRefresh/0.1 (+https://github.com/kianderson19/kianderson19.github.io)" },
+  });
+  if (!response.ok) throw new HttpFailure(response.status, sourceUrl);
+  assert(response.url === sourceUrl && /html/i.test(response.headers.get("content-type") ?? ""), "Official queue contract source changed; snapshot preserved");
+  return validateQueueContract(await limitedBody(response));
+}
+
 export async function fetchOfficial(request, { signal, timeoutMs = 45_000 } = {}) {
-  sourceRequest(request.sourceUrl);
+  const verifiedRequest = sourceRequest(request.sourceUrl);
+  assert(verifiedRequest.rq !== HISTORICAL_COMPETITIVE_RQ, "Historical rq=2 is read-only; new collection requires the reviewed competitive rq=1 contract");
   const timeout = new AbortController();
   const timer = setTimeout(() => timeout.abort(new DOMException("Request timed out", "TimeoutError")), timeoutMs);
   const combined = signal ? AbortSignal.any([signal, timeout.signal]) : timeout.signal;
@@ -227,7 +268,7 @@ function freshScope(request, collectedAt, mode) {
   return {
     mapId: request.map === "all-maps" ? null : request.map, tier: request.tier.toLowerCase(),
     tierLabel: TIERS[request.tier], tierGrouping: request.tier === "Grandmaster" ? ["grandmaster", "champion"] : [],
-    queue: request.rq === "2" ? "competitive" : "quickplay", queueMode: "role-queue", region: "asia", platform: "pc",
+    queue: isCompetitive(request.rq) ? "competitive" : "quickplay", queueMode: "role-queue", region: "asia", platform: "pc",
     sourceKind: "blizzard", sampleSize: null, dataDate: null, collectedAt,
     sourceUrl: request.sourceUrl, evidenceUrl: request.sourceUrl.replace("/rates/data/", "/rates/"),
     mode, patch: null, season: null, winRateMetric: "publisher-winrate", mirrorHandling: "not-disclosed",
@@ -260,7 +301,7 @@ export function mergeResponses(previous, results, generatedAt) {
     } else {
       assert(result.kind === "timeout" && validDate(result.observedAt) && typeof result.reason === "string", "Only observed transport timeouts may retain old data");
       const prior = old.get(id(request));
-      const gap = { sourceUrl: request.sourceUrl, mapId: request.map === "all-maps" ? null : request.map, tier: request.tier.toLowerCase(), queue: request.rq === "2" ? "competitive" : "quickplay", reason: result.reason, observedAt: result.observedAt };
+      const gap = { sourceUrl: request.sourceUrl, mapId: request.map === "all-maps" ? null : request.map, tier: request.tier.toLowerCase(), queue: isCompetitive(request.rq) ? "competitive" : "quickplay", reason: result.reason, observedAt: result.observedAt };
       failedAttempts.push({ ...gap, preservedPrevious: Boolean(prior), ...(prior ? { collectedAt: prior.scope.collectedAt } : {}) });
       if (prior) {
         // Keep values AND per-scope timestamps/URLs exactly as last observed.
@@ -298,6 +339,10 @@ export async function main(args = process.argv.slice(2)) {
   const original = await readFile(path, "utf8"), previous = JSON.parse(original);
   const summary = validateSnapshot(previous);
   if (args[0] !== "--refresh") { console.log(JSON.stringify({ mode: "read-only-validation", ...summary })); return; }
+  // Review the semantic mode labels before requesting any percentages. A new
+  // enum value must be reviewed, never probed or silently treated as a fallback.
+  await verifyOfficialQueueContract();
+  await sleep(1_000);
   const results = await collectResponses(requestPlan());
   const merged = mergeResponses(previous, results, new Date().toISOString());
   assert(merged.updatedScopes > 0, "No validated fresh scope; previous snapshot preserved");

@@ -5,14 +5,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { setImmediate as immediate } from "node:timers/promises";
 import {
-  HERO_IDS, MAP_IDS, TIERS, FAQ, EXPECTED_SCOPES, requestPlan, makeRequest,
+  HERO_IDS, MAP_IDS, TIERS, FAQ, EXPECTED_SCOPES, requestPlan, makeRequest, COMPETITIVE_RQ, validateQueueContract, fetchOfficial,
   sourceRequest, sourcePercent, decodeResponse, validateSnapshot, collectResponses,
   mergeResponses, atomicWriteSnapshot, HttpFailure, TransportTimeout,
 } from "./refresh-statistics.mjs";
 
 const OLD = "2026-10-08T06:00:00.000Z", NEW = "2026-10-08T12:00:00.000Z";
-const plan = requestPlan(), key = request => `${request.rq}/${request.map}/${request.tier}`;
-const route = makeRequest("route-66", "Gold", "2");
+const plan = requestPlan(), key = request => `${["1", "2"].includes(request.rq) ? "competitive" : "quickplay"}/${request.map}/${request.tier}`;
+const route = makeRequest("route-66", "Gold", "1");
 function payload(request, rates = new Map()) {
   return { rates: { selected: { ...request.selected }, rates: HERO_IDS.map(id => ({
     id, cells: { name: id, winrate: rates.get(id)?.[0] ?? 50, pickrate: 3, banrate: 0 },
@@ -21,7 +21,7 @@ function payload(request, rates = new Map()) {
 function fixture() {
   // Two real observations plus explicit transport gaps for the remaining plan.
   // This is a synthetic schema fixture, not current Blizzard observations.
-  const observed = [makeRequest("all-maps", "All", "2"), route];
+  const observed = [makeRequest("all-maps", "All", "1"), route];
   const scopes = observed.map(request => ({
     mapId: request.map === "all-maps" ? null : request.map, tier: request.tier.toLowerCase(),
     tierLabel: TIERS[request.tier], tierGrouping: [], queue: "competitive", queueMode: "role-queue",
@@ -34,12 +34,21 @@ function fixture() {
     values: observed.flatMap((_, scope) => HERO_IDS.map((_, hero) => [hero, scope, 50, 3, 0])),
     coverage: { expectedScopes: EXPECTED_SCOPES, observedScopes: scopes.length, unavailable: plan.filter(request => !observed.some(row => key(row) === key(request))).map(request => ({
       sourceUrl: request.sourceUrl, mapId: request.map === "all-maps" ? null : request.map,
-      tier: request.tier.toLowerCase(), queue: request.rq === "2" ? "competitive" : "quickplay",
+      tier: request.tier.toLowerCase(), queue: request.rq === "1" ? "competitive" : "quickplay",
       reason: "Synthetic transport timeout; not measured zero wins", observedAt: OLD,
     })) } };
 }
 function timeoutResults() {
   return plan.map(request => ({ kind: "timeout", request, observedAt: NEW, reason: "Transport timeout; not an empty or zero-win dataset" }));
+}
+function legacyFixture() {
+  const base = fixture();
+  for (const scope of base.scopes) {
+    scope.sourceUrl = scope.sourceUrl.replace("rq=1", "rq=2");
+    scope.evidenceUrl = scope.evidenceUrl.replace("rq=1", "rq=2");
+  }
+  base.coverage.unavailable.forEach(gap => { gap.sourceUrl = gap.sourceUrl.replace("rq=1", "rq=2"); });
+  return base;
 }
 function replaceResult(results, request, value) { results[plan.findIndex(row => key(row) === key(request))] = value; }
 function observed(request, source = payload(request)) { return decodeResponse(source, request, NEW); }
@@ -48,14 +57,48 @@ function clock() {
   return { now: () => milliseconds, wait: async delay => { milliseconds += delay; } };
 }
 
-test("plan covers 31 maps by every published tier plus globals and observed Quick Play rq=0", () => {
+test("plan covers 31 maps by every published tier plus globals using competitive rq=1 and Quick Play rq=0", () => {
+  assert.equal(COMPETITIVE_RQ, "1");
   assert.equal(HERO_IDS.length, 54); assert.equal(MAP_IDS.length, 31); assert.equal(plan.length, 289);
   assert.equal(new Set(plan.map(key)).size, 289);
-  assert.equal(plan.filter(request => request.rq === "2").length, 288);
-  assert.deepEqual(plan.filter(request => request.rq !== "2").map(request => request.selected), [{ input: "PC", map: "all-maps", region: "Asia", role: "All", rq: "0", tier: "All" }]);
+  assert.equal(plan.filter(request => request.rq === "1").length, 288);
+  assert.deepEqual(plan.filter(request => request.rq !== "1").map(request => request.selected), [{ input: "PC", map: "all-maps", region: "Asia", role: "All", rq: "0", tier: "All" }]);
   for (const map of MAP_IDS) assert.equal(plan.filter(request => request.map === map).length, 9);
-  assert.throws(() => makeRequest("route-66", "Champion", "2"), /Unreviewed tier/);
-  assert.throws(() => makeRequest("route-66", "All", "1"), /Unreviewed queue/);
+  assert.throws(() => makeRequest("route-66", "Champion", "1"), /Unreviewed tier/);
+  assert.throws(() => makeRequest("route-66", "All", "3"), /Unreviewed queue/);
+});
+
+test("official dropdown confirms queue semantics before collection and refuses a changed enum", () => {
+  const html = `<select data-label='rq' id='filter-rq-select'><option value='0' data-title='빠른 대전 - 역할 고정'>빠른 대전 - 역할 고정</option><option value='1' data-title='경쟁전 - 역할 고정'>경쟁전 - 역할 고정</option></select>`;
+  assert.deepEqual(validateQueueContract(html), { competitive: "1", quickplay: "0" });
+  assert.throws(() => validateQueueContract(html.replace("value='1'", "value='2'")), /Official queue contract changed: competitive=2/);
+  assert.throws(() => validateQueueContract(html.replace("value='0'", "value='1'")), /Official queue contract changed/);
+  assert.throws(() => validateQueueContract(html.replace("filter-rq-select", "other-select")), /dropdown is missing/);
+  assert.throws(() => validateQueueContract(html.replace("</select>", "<option value='1' data-title='경쟁전 - 역할 고정'>duplicate</option></select>")), /Ambiguous/);
+});
+
+test("historical rq=2 cached scopes remain valid but may not make live requests", async () => {
+  const legacy = legacyFixture();
+  assert.deepEqual(validateSnapshot(legacy), validateSnapshot(fixture()));
+  assert.equal(sourceRequest(legacy.scopes[0].sourceUrl).rq, "2");
+  await assert.rejects(fetchOfficial(makeRequest("all-maps", "All", "2")), /Historical rq=2 is read-only/);
+  const duplicate = structuredClone(legacy);
+  duplicate.scopes.push({ ...duplicate.scopes[0], sourceUrl: duplicate.scopes[0].sourceUrl.replace("rq=2", "rq=1"), evidenceUrl: duplicate.scopes[0].evidenceUrl.replace("rq=2", "rq=1") });
+  assert.throws(() => validateSnapshot(duplicate), /Duplicate or unexpected stored scope/);
+});
+
+test("current rq=1 observations replace historical competitive scopes without relabeling retained rows", () => {
+  const previous = legacyFixture(), original = JSON.stringify(previous), results = timeoutResults();
+  replaceResult(results, route, observed(route));
+  const merged = mergeResponses(previous, results, NEW);
+  assert.equal(merged.updatedScopes, 1); assert.equal(merged.retainedScopes, 1);
+  assert.equal(merged.snapshot.scopes.length, 2); assert.equal(merged.snapshot.coverage.unavailable.length, 287);
+  const current = merged.snapshot.scopes.find(scope => scope.mapId === "route-66");
+  assert.equal(current.sourceUrl, route.sourceUrl); assert.equal(current.queue, "competitive"); assert.equal(current.collectedAt, NEW);
+  const retained = merged.snapshot.scopes.find(scope => scope.mapId === null);
+  assert.deepEqual(retained, previous.scopes[0]); assert.match(retained.sourceUrl, /rq=2/);
+  assert.equal(merged.snapshot.refresh.failedAttempts.find(row => row.preservedPrevious).collectedAt, OLD);
+  assert.equal(JSON.stringify(previous), original);
 });
 
 test("source URL cannot change origin, queue, scope, filter names or duplicate parameters", () => {
@@ -64,7 +107,7 @@ test("source URL cannot change origin, queue, scope, filter names or duplicate p
     route.sourceUrl.replace("https:", "http:"), route.sourceUrl.replace("overwatch.blizzard.com", "example.test"),
     route.sourceUrl.replace("/rates/data/", "/rates/"), route.sourceUrl.replace("Asia", "Europe"),
     `${route.sourceUrl}&tier=All`, `${route.sourceUrl}&season=5`, `${route.sourceUrl}#extra`,
-    route.sourceUrl.replace("Gold", "Champion"), route.sourceUrl.replace("rq=2", "rq=1"),
+    route.sourceUrl.replace("Gold", "Champion"), route.sourceUrl.replace("rq=1", "rq=3"),
     route.sourceUrl.replace("https://", "https://name:password@"),
   ]) assert.throws(() => sourceRequest(url));
 });
@@ -92,6 +135,8 @@ test("all six selected echo keys must match exactly", () => {
   for (const mutate of [s => { delete s.tier; }, s => { s.extra = "All"; }, s => { s.rq = 2; }]) {
     const raw = payload(route); mutate(raw.rates.selected); assert.throws(() => observed(route, raw));
   }
+  const fallback = payload(route); fallback.rates.selected.rq = "0"; fallback.rates.selected.map = "all-maps";
+  assert.throws(() => observed(route, fallback), /Selected scope mismatch.*requested route-66, received all-maps.*requested 1, received 0.*snapshot preserved/);
 });
 
 test("reordered heroes are accepted by ID; duplicates, omissions or a new roster stop publication", () => {
@@ -139,7 +184,7 @@ test("a fresh missing value replaces the old number; only a transport timeout pr
 });
 
 test("new observations fill a gap without fabricating rows for remaining failures", () => {
-  const base = fixture(), results = timeoutResults(), request = makeRequest("grimsvotn", "Grandmaster", "2");
+  const base = fixture(), results = timeoutResults(), request = makeRequest("grimsvotn", "Grandmaster", "1");
   replaceResult(results, request, observed(request));
   const merged = mergeResponses(base, results, NEW);
   assert.equal(merged.updatedScopes, 1); assert.equal(merged.retainedScopes, 2);
