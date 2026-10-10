@@ -1,0 +1,208 @@
+{
+  "video": {
+    "id": "23Oo2N_idfY",
+    "url": "https://www.youtube.com/watch?v=23Oo2N_idfY",
+    "title": "고티어로 가기 위한 필수 관문! 오버워치 중급 가이드 2편 조합 | 옵치토크쇼",
+    "publishedAt": "2026-09-30",
+    "durationSeconds": 1275,
+    "transcript": "auto-generated Korean; reviewed in full",
+    "visualChecksSeconds": [
+      127,
+      382,
+      637,
+      1020
+    ]
+  },
+  "reviewedAt": "2026-10-10T11:58:43.195Z",
+  "limits": [
+    "공식 설명은 기술 존재·대상·범위를 검토하는 근거다. 조합 승률과 점수 계수를 검증한 실험이 아니다.",
+    "미즈키·안란 등 특수 상호작용은 실게임 재현을 수행하지 않았다.",
+    "실제 요구 HPS·숙련도·플레이 행동·거점 점유와 남은 시간은 관측하지 않았다."
+  ],
+  "claims": [
+    {
+      "start": 24,
+      "end": 36,
+      "claim": "정형화된 다섯 픽보다 현재 픽의 역할을 연결",
+      "status": "구조 타당",
+      "result": "네 동료를 유지한 같은 역할 교체를 평가. 유형 이름만으로 성공을 가정하지 않음.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 36,
+      "end": 72,
+      "claim": "본대 요구 치유를 먼저 확인",
+      "status": "조건부 반영",
+      "result": "지원 두 명을 힐량 충족으로 대체하지 않음. 직접 치유 담당·자원·도달을 점검.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 72,
+      "end": 130,
+      "claim": "지원 영웅의 집중 치유 분류",
+      "status": "정성 분류",
+      "result": "16명 현행 기술을 대조. 순서는 HPS 실측·티어별 개인 행동 통계가 아님.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 98,
+      "end": 113,
+      "claim": "고티어 모이라는 본대에 드물다는 관찰",
+      "status": "검증 보류",
+      "result": "행동 자료가 없음. 고티어라는 이유로 모이라를 힐러에서 제외하지 않음.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 114,
+      "end": 129,
+      "claim": "메르시를 치유에 묶을 때의 기회비용",
+      "status": "조건부 타당",
+      "result": "지팡이의 치유·증폭 역할 분담은 확인. 모든 상황에서 낮은 가치라는 뜻은 아님.",
+      "source": "https://overwatch.blizzard.com/ko-kr/heroes/mercy/"
+    },
+    {
+      "start": 136,
+      "end": 171,
+      "claim": "제트팩 캣의 이동·공격 역할",
+      "status": "조건부 타당",
+      "result": "사격·견인·광역 치유도 보유. 본대 치유 불가능으로 배제하지 않음.",
+      "source": "https://overwatch.blizzard.com/ko-kr/heroes/jetpack-cat/"
+    },
+    {
+      "start": 172,
+      "end": 203,
+      "claim": "젠야타·브리기테·루시우의 치유 부담",
+      "status": "범위 구분",
+      "result": "구슬·팩·오라는 실제 아군을 치유. 집중 지속 교환의 여유는 자원과 운영에 의존.",
+      "source": "https://overwatch.blizzard.com/ko-kr/heroes/brigitte/"
+    },
+    {
+      "start": 205,
+      "end": 251,
+      "claim": "기본 치유가 갖춰지면 상대 대응 지원 선택",
+      "status": "구조 타당",
+      "result": "추가 지원의 보호·정화·견제를 보되 기존 치유 전달을 잃는지 확인.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 252,
+      "end": 290,
+      "claim": "주력·보조 딜러를 반드시 한 명씩 선택",
+      "status": "영상도 조건부",
+      "result": "공식 역할 제한이 아님. 동일 분류보다 중복 공백·맵·사격 시야를 점검.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 290,
+      "end": 343,
+      "claim": "겐지·위도우 등의 정면 교환 약점",
+      "status": "조건부",
+      "result": "거리가 다른 딜러가 무조건 나쁜 것은 아님. 측면 처치와 사격 후속의 역할 배분 필요.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 303,
+      "end": 319,
+      "claim": "리퍼·정크랫의 공중 대응 공백",
+      "status": "조건부",
+      "result": "근거리 압박 부담은 점검. 낮게 들어온 비행 대상이나 다른 아군의 대응을 제외하지 않음.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 378,
+      "end": 432,
+      "claim": "지원의 치유 방식이 탱커 선택을 제한",
+      "status": "구조 타당",
+      "result": "지원의 자기 이동과 실제 치유 전달을 분리. 우양의 정확한 거리 제한은 현행 공개 설명으로 확정 못함.",
+      "source": "https://overwatch.blizzard.com/ko-kr/heroes/wuyang/"
+    },
+    {
+      "start": 441,
+      "end": 500,
+      "claim": "맵에 따른 원거리·고지·근접 탱커",
+      "status": "조건부 타당",
+      "result": "모드 전체 대신 거점 지형을 비교. 지상 접근·수비 선점·이탈 경로도 고려.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 505,
+      "end": 524,
+      "claim": "마우가에 여러 탱커 대응 도구가 집중",
+      "status": "조건부 타당",
+      "result": "여러 독립 제약·동료 후속을 누적. 대응 영웅 숫자만으로 패배를 확정하지 않음.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 565,
+      "end": 645,
+      "claim": "투사체 차단은 들어오는 피해량을 무효화",
+      "status": "범위 수정",
+      "result": "호환 투사체·정면·사용 창·자원에 한정. 무한 지속·모든 피해 차단이 아님.",
+      "source": "https://overwatch.blizzard.com/ko-kr/heroes/dva/"
+    },
+    {
+      "start": 644,
+      "end": 716,
+      "claim": "흡수형 방어는 모두 근접에 약함",
+      "status": "예외 확인",
+      "result": "오리사 수호의 창은 공식 영문상 근접도 막음. 디바·시그마와 일괄 적용하지 않음.",
+      "source": "https://overwatch.blizzard.com/en-us/heroes/orisa/"
+    },
+    {
+      "start": 677,
+      "end": 715,
+      "claim": "라마트라 응징의 방벽 관통",
+      "status": "과거 공식 근거",
+      "result": "2024년 10월 29일 재관통 패치는 확인. 최신 개별 상호작용 재현은 별도 확인 범위.",
+      "source": "https://overwatch.blizzard.com/en-us/news/patch-notes/live/2024/10/"
+    },
+    {
+      "start": 608,
+      "end": 623,
+      "claim": "미즈키 사슬이 매트릭스를 통과",
+      "status": "재현 검증 보류",
+      "result": "현행 설명은 이동 방해만 명시. 해당 특수 충돌 판정을 공식 설명만으로 확정하지 않음.",
+      "source": "https://overwatch.blizzard.com/ko-kr/heroes/mizuki/"
+    },
+    {
+      "start": 598,
+      "end": 607,
+      "claim": "안란 공격의 매트릭스 우회 판정",
+      "status": "재현 검증 보류",
+      "result": "현행 기술 이름·설명은 확인. 예외 흡수 판정은 실게임 또는 명시 자료 필요.",
+      "source": "https://overwatch.blizzard.com/ko-kr/heroes/anran/"
+    },
+    {
+      "start": 721,
+      "end": 813,
+      "claim": "순간 화력과 누적 포킹을 구분",
+      "status": "용어·조건",
+      "result": "개념은 유용. 파라가 어떤 시간 창에서도 순간 피해를 못 낸다는 뜻으로 적용하지 않음.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 832,
+      "end": 1138,
+      "claim": "누가 대치하면 손해인지로 진입 목적 판단",
+      "status": "조건부 반영",
+      "result": "두 딜러의 기본 도구를 먼저 비교. 거점·시간·현재 시야 없이 무조건 진입/대치를 지시하지 않음.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 1138,
+      "end": 1267,
+      "claim": "상황에 따라 주도 역할과 공간 보호 역할",
+      "status": "조건부 반영",
+      "result": "탱커가 항상 직접 처치를 해야 하는 것은 아님. 카운터 수만으로 캐리·조연을 확정하지 않음.",
+      "source": "https://www.youtube.com/watch?v=23Oo2N_idfY"
+    },
+    {
+      "start": 82,
+      "end": 89,
+      "claim": "독트린 출시 전 성능 예상",
+      "status": "시점 보정",
+      "result": "영상은 9월 30일. 10월 출시·솜브라 지원 전환을 별도 확인하며 옛 분류를 복제하지 않음.",
+      "source": "https://overwatch.blizzard.com/en-us/news/patch-notes/live/2026/10/"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"weights":{"matchup":30,"map":20,"synergy":25,"counter":10,"statistics":15},"scale":{"min":1,"max":9,"rawMin":0,"rawMax":10,"neutral":5,"expansion":2.5,"formula":"공개 적합도 = 소수1자리 반올림(clip(5 + (rawScore − 5) × 2.5, 1, 9))"},"practicalRules":{"focusHealingGapSynergy":-1,"reachDifference":0.5},"modelKind":"editorial-heuristic","empiricallyCalibrated":false}
