@@ -71,8 +71,9 @@ test("plan covers 31 maps by every published tier plus globals using competitive
 test("official dropdown confirms queue semantics before collection and refuses a changed enum", () => {
   const html = `<select data-label='rq' id='filter-rq-select'><option value='0' data-title='빠른 대전 - 역할 고정'>빠른 대전 - 역할 고정</option><option value='1' data-title='경쟁전 - 역할 고정'>경쟁전 - 역할 고정</option></select>`;
   assert.deepEqual(validateQueueContract(html), { competitive: "1", quickplay: "0" });
-  assert.throws(() => validateQueueContract(html.replace("value='1'", "value='2'")), /Official queue contract changed: competitive=2/);
-  assert.throws(() => validateQueueContract(html.replace("value='0'", "value='1'")), /Official queue contract changed/);
+  assert.deepEqual(validateQueueContract(html.replace("value='1'", "value='2'")), { competitive: "2", quickplay: "0" });
+  assert.throws(() => validateQueueContract(html.replace("value='1'", "value='3'")), /require review/);
+  assert.throws(() => validateQueueContract(html.replace("value='0'", "value='1'")), /require review/);
   assert.throws(() => validateQueueContract(html.replace("filter-rq-select", "other-select")), /dropdown is missing/);
   assert.throws(() => validateQueueContract(html.replace("</select>", "<option value='1' data-title='경쟁전 - 역할 고정'>duplicate</option></select>")), /Ambiguous/);
 });
@@ -257,4 +258,18 @@ test("atomic replacement validates the complete file and refuses to overwrite an
     assert.equal(await readFile(path, "utf8"), concurrent);
     assert.deepEqual(await readdir(directory), ["statistics.json"], "failed staging leaves no temp file or partial target");
   } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+
+test("the witnessed competitive dropdown can return rq=2 without relabeling quickplay or erasing semantic provenance", () => {
+  const contract = {competitive:"2",quickplay:"0",sourceUrl:"https://overwatch.blizzard.com/ko-kr/rates/",checkedAt:"2026-10-10T00:55:00Z"};
+  const current = requestPlan(contract.competitive), capturedAt="2026-10-10T01:00:00Z";
+  const results=current.map(request=>({...decodeResponse(payload(request),request,capturedAt),queueContract:contract}));
+  const merged=mergeResponses(fixture(),results,"2026-10-10T01:05:00Z",current);
+  assert.equal(validateSnapshot(merged.snapshot).observedScopes,289);
+  assert.equal(merged.snapshot.scopes.filter(scope=>scope.queue==="competitive").length,288);
+  assert.equal(merged.snapshot.scopes.find(scope=>scope.queue==="quickplay").queueContract.quickplay,"0");
+  assert.equal(sourceRequest(merged.snapshot.scopes[0].sourceUrl).rq,"2");
+  delete merged.snapshot.scopes[0].queueContract;
+  assert.throws(()=>validateSnapshot(merged.snapshot), /semantic queue evidence/);
 });

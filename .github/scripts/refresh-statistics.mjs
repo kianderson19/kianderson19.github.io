@@ -47,11 +47,11 @@ export class HttpFailure extends Error {
   constructor(status, url) { super(`HTTP ${status}: ${url}; stopped without retry`); this.status = status; this.name = "HttpFailure"; }
 }
 
-export function requestPlan() {
+export function requestPlan(competitiveRq = COMPETITIVE_RQ) {
   const tiers = Object.keys(TIERS);
   return [
-    ...tiers.map(tier => makeRequest("all-maps", tier, COMPETITIVE_RQ)),
-    ...MAP_IDS.flatMap(map => tiers.map(tier => makeRequest(map, tier, COMPETITIVE_RQ))),
+    ...tiers.map(tier => makeRequest("all-maps", tier, competitiveRq)),
+    ...MAP_IDS.flatMap(map => tiers.map(tier => makeRequest(map, tier, competitiveRq))),
     makeRequest("all-maps", "All", "0"),
   ];
 }
@@ -106,6 +106,11 @@ export function decodeResponse(payload, request, collectedAt) {
   return { kind: "observed", request, collectedAt, values };
 }
 
+export function validQueueContract(contract) {
+  return contract && contract.sourceUrl === `${ORIGIN}/ko-kr/rates/` && validDate(contract.checkedAt)
+    && ["1", "2"].includes(contract.competitive) && contract.quickplay === "0";
+}
+
 export function validateSnapshot(snapshot) {
   assert(snapshot?.version === 1 && validDate(snapshot.generatedAt), "Unsupported snapshot version or generation time");
   assert(Array.isArray(snapshot.heroes) && snapshot.heroes.length === HERO_IDS.length && new Set(snapshot.heroes).size === HERO_IDS.length && snapshot.heroes.every(hero => knownHeroes.has(hero)), "Snapshot hero set differs from reviewed roster");
@@ -121,6 +126,8 @@ export function validateSnapshot(snapshot) {
     assert(scope.sourceKind === "blizzard" && scope.sampleSize === null && scope.dataDate === null && scope.patch === null && scope.season === null, "Undisclosed metadata must stay undisclosed");
     assert(scope.winRateMetric === "publisher-winrate" && scope.mirrorHandling === "not-disclosed" && scope.pickRateUnit === "hero-playtime-usage" && scope.definitionSourceUrl === FAQ, "Unsupported rate definition or invented mirror/sample semantics");
     assert(validDate(scope.collectedAt) && Date.parse(scope.collectedAt) <= Date.parse(snapshot.generatedAt), "Invalid scope retrieval time");
+    if (scope.queueContract) assert(validQueueContract(scope.queueContract) && (isCompetitive(request.rq) ? scope.queueContract.competitive : scope.queueContract.quickplay) === request.rq && Date.parse(scope.queueContract.checkedAt) <= Date.parse(scope.collectedAt), "Stored queue contract mismatch");
+    if (request.rq === "2" && Date.parse(scope.collectedAt) > Date.parse("2026-10-09T15:59:38Z")) assert(validQueueContract(scope.queueContract), "Current rq=2 observation requires official semantic queue evidence");
     assert(scope.evidenceUrl === request.sourceUrl.replace("/rates/data/", "/rates/"), "Evidence URL does not describe the same scope");
     assert(scope.tierLabel === TIERS[request.tier] && JSON.stringify(scope.tierGrouping) === JSON.stringify(request.tier === "Grandmaster" ? ["grandmaster", "champion"] : []), "Tier grouping changed");
     rowsByScope.set(index, new Set());
@@ -182,9 +189,10 @@ export function validateQueueContract(html) {
       modes.set(title, value);
     }
   }
-  assert(modes.get("경쟁전 - 역할 고정") === COMPETITIVE_RQ && modes.get("빠른 대전 - 역할 고정") === "0",
-    `Official queue contract changed: competitive=${String(modes.get("경쟁전 - 역할 고정"))}, quickplay=${String(modes.get("빠른 대전 - 역할 고정"))}; expected ${COMPETITIVE_RQ}/0; snapshot preserved until reviewed`);
-  return { competitive: COMPETITIVE_RQ, quickplay: "0" };
+  const competitive = modes.get("경쟁전 - 역할 고정");
+  assert(["1", "2"].includes(competitive) && modes.get("빠른 대전 - 역할 고정") === "0",
+    `Official queue labels/values require review: competitive=${String(competitive)}, quickplay=${String(modes.get("빠른 대전 - 역할 고정"))}; snapshot preserved`);
+  return { competitive, quickplay: "0" };
 }
 
 export async function verifyOfficialQueueContract() {
@@ -195,12 +203,12 @@ export async function verifyOfficialQueueContract() {
   });
   if (!response.ok) throw new HttpFailure(response.status, sourceUrl);
   assert(response.url === sourceUrl && /html/i.test(response.headers.get("content-type") ?? ""), "Official queue contract source changed; snapshot preserved");
-  return validateQueueContract(await limitedBody(response));
+  return { ...validateQueueContract(await limitedBody(response)), sourceUrl, checkedAt: new Date().toISOString() };
 }
 
-export async function fetchOfficial(request, { signal, timeoutMs = 45_000 } = {}) {
+export async function fetchOfficial(request, { signal, timeoutMs = 45_000, queueContract } = {}) {
   const verifiedRequest = sourceRequest(request.sourceUrl);
-  assert(verifiedRequest.rq !== HISTORICAL_COMPETITIVE_RQ, "Historical rq=2 is read-only; new collection requires the reviewed competitive rq=1 contract");
+  assert(!isCompetitive(verifiedRequest.rq) || (validQueueContract(queueContract) && queueContract.competitive === verifiedRequest.rq), "Historical rq=2 is read-only without verified current queue contract; competitive requests require the official dropdown observation");
   const timeout = new AbortController();
   const timer = setTimeout(() => timeout.abort(new DOMException("Request timed out", "TimeoutError")), timeoutMs);
   const combined = signal ? AbortSignal.any([signal, timeout.signal]) : timeout.signal;
@@ -211,7 +219,7 @@ export async function fetchOfficial(request, { signal, timeoutMs = 45_000 } = {}
     });
     if (!response.ok) throw new HttpFailure(response.status, request.sourceUrl);
     assert(response.url === request.sourceUrl, "Response URL changed; no redirect/source substitution allowed");
-    return { payload: await limitedJSON(response), collectedAt: new Date().toISOString() };
+    return { payload: await limitedJSON(response), collectedAt: new Date().toISOString(), queueContract };
   } catch (error) {
     if (signal?.aborted) throw signal.reason;
     if (timeout.signal.aborted) throw new TransportTimeout(`Transport timeout for ${request.sourceUrl}; not an empty or zero-win dataset`);
@@ -248,7 +256,7 @@ export async function collectResponses(plan, fetchScope = fetchOfficial, options
       try {
         const started = await networkSlot(() => fetchScope(request, { signal: stop.signal }));
         const response = await started.response;
-        results[index] = decodeResponse(response.payload, request, response.collectedAt);
+        results[index] = { ...decodeResponse(response.payload, request, response.collectedAt), ...(response.queueContract ? { queueContract: response.queueContract } : {}) };
       } catch (error) {
         if (stop.signal.aborted) break;
         if (error instanceof TransportTimeout || error?.name === "TimeoutError") {
@@ -264,7 +272,7 @@ export async function collectResponses(plan, fetchScope = fetchOfficial, options
   return results;
 }
 
-function freshScope(request, collectedAt, mode) {
+function freshScope(request, collectedAt, mode, queueContract) {
   return {
     mapId: request.map === "all-maps" ? null : request.map, tier: request.tier.toLowerCase(),
     tierLabel: TIERS[request.tier], tierGrouping: request.tier === "Grandmaster" ? ["grandmaster", "champion"] : [],
@@ -272,13 +280,12 @@ function freshScope(request, collectedAt, mode) {
     sourceKind: "blizzard", sampleSize: null, dataDate: null, collectedAt,
     sourceUrl: request.sourceUrl, evidenceUrl: request.sourceUrl.replace("/rates/data/", "/rates/"),
     mode, patch: null, season: null, winRateMetric: "publisher-winrate", mirrorHandling: "not-disclosed",
-    pickRateUnit: "hero-playtime-usage", definitionSourceUrl: FAQ,
+    pickRateUnit: "hero-playtime-usage", definitionSourceUrl: FAQ, ...(queueContract ? { queueContract } : {}),
   };
 }
 
-export function mergeResponses(previous, results, generatedAt) {
+export function mergeResponses(previous, results, generatedAt, plan = requestPlan()) {
   validateSnapshot(previous); assert(validDate(generatedAt), "Invalid output timestamp");
-  const plan = requestPlan();
   assert(Array.isArray(results) && results.length === plan.length, "Collection must account for all planned scopes");
   const old = new Map(previous.scopes.map((scope, index) => [id(sourceRequest(scope.sourceUrl)), { scope, rows: previous.values.filter(row => row[1] === index) }]));
   const modes = new Map(previous.scopes.filter(scope => scope.mapId).map(scope => [scope.mapId, scope.mode]));
@@ -292,7 +299,7 @@ export function mergeResponses(previous, results, generatedAt) {
       assert(result.values.length === HERO_IDS.length && new Set(result.values.map(row => row.heroId)).size === HERO_IDS.length, "Invalid normalized hero inventory");
       assert(validDate(result.collectedAt) && Date.parse(result.collectedAt) <= Date.parse(generatedAt), "Retrieval time exceeds output time");
       const nextIndex = scopes.length;
-      scopes.push(freshScope(request, result.collectedAt, modes.get(request.map) ?? null));
+      scopes.push(freshScope(request, result.collectedAt, modes.get(request.map) ?? null, result.queueContract));
       for (const row of result.values) {
         assert(heroIndex.has(row.heroId) && row.rates.length === 3, "Invalid normalized hero values");
         row.rates.forEach(storedPercent); values.push([heroIndex.get(row.heroId), nextIndex, ...row.rates]);
@@ -341,10 +348,11 @@ export async function main(args = process.argv.slice(2)) {
   if (args[0] !== "--refresh") { console.log(JSON.stringify({ mode: "read-only-validation", ...summary })); return; }
   // Review the semantic mode labels before requesting any percentages. A new
   // enum value must be reviewed, never probed or silently treated as a fallback.
-  await verifyOfficialQueueContract();
+  const queueContract = await verifyOfficialQueueContract();
+  const plan = requestPlan(queueContract.competitive);
   await sleep(1_000);
-  const results = await collectResponses(requestPlan());
-  const merged = mergeResponses(previous, results, new Date().toISOString());
+  const results = await collectResponses(plan, (request, options) => fetchOfficial(request, { ...options, queueContract }));
+  const merged = mergeResponses(previous, results, new Date().toISOString(), plan);
   assert(merged.updatedScopes > 0, "No validated fresh scope; previous snapshot preserved");
   await atomicWriteSnapshot(path, merged.snapshot, original);
   console.log(JSON.stringify({ mode: "refresh", ...validateSnapshot(merged.snapshot), updatedScopes: merged.updatedScopes, retainedScopes: merged.retainedScopes }));
