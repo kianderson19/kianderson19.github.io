@@ -1,0 +1,1 @@
+{"name": "JOHAP · 조합 도우미", "short_name": "JOHAP", "lang": "ko", "start_url": "./", "scope": "./", "display": "standalone", "background_color": "#10131b", "theme_color": "#10131b", "icons": [{"src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}, {"src": "apple-touch-icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any"}]}
