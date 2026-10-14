@@ -1,5 +1,5 @@
 /* Cache only this release's static content. Statistics and external APIs stay outside this cache. */
-const CACHE='johap-static-f2bcb9b5c4a7c847';
+const CACHE='johap-static-9ff849cbda6811c1';
 const staticPath=/\/(assets|icons|maps|guide|ocr|fonts)\/|\/theme-init\.js$|\.(png|jpe?g|svg|webp|woff2)$/;
 self.addEventListener('activate',event=>event.waitUntil((async()=>{
   for(const key of await caches.keys()) if(key.startsWith('johap-static-') && key!==CACHE) await caches.delete(key);
