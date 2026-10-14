@@ -1,5 +1,5 @@
 /* Cache only this release's static content. Statistics and external APIs stay outside this cache. */
-const CACHE='johap-static-ec478381af626639';
+const CACHE='johap-static-59f2e24f2de0fb09';
 const staticPath=/\/(assets|icons|maps|guide|ocr|fonts)\/|\/theme-init\.js$|\.(png|jpe?g|svg|webp|woff2)$/;
 self.addEventListener('activate',event=>event.waitUntil((async()=>{
   for(const key of await caches.keys()) if(key.startsWith('johap-static-') && key!==CACHE) await caches.delete(key);
@@ -12,8 +12,10 @@ self.addEventListener('fetch',event=>{
     const key=request.mode==='navigate'?url.origin+url.pathname:request;
     const saved=await cache.match(key);
     if(saved && request.mode!=='navigate' && request.cache!=='reload' && request.cache!=='no-cache') return saved;
+    const controller=new AbortController();
+    const timer=request.mode==='navigate'?setTimeout(()=>controller.abort(),4000):undefined;
     try {
-      const response=await fetch(request,request.mode==='navigate'?{signal:AbortSignal.timeout(4000)}:undefined);
+      const response=await fetch(request,request.mode==='navigate'?{signal:controller.signal}:undefined);
       if(response.ok) {
         try { await cache.put(key,response.clone()); } catch { /* Storage pressure must not break the online app. */ }
         return response;
@@ -21,5 +23,6 @@ self.addEventListener('fetch',event=>{
       if(saved) return saved;
       return response;
     } catch(error) { if(saved) return saved;throw error; }
+    finally { if(timer!==undefined) clearTimeout(timer); }
   })());
 });
