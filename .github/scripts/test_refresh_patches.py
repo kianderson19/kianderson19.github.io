@@ -14,6 +14,10 @@ class PatchTests(unittest.TestCase):
   self.assertEqual(self.note['date'],'2026-10-13');self.assertEqual(len(self.note['facts']),11);self.assertEqual(self.note['pending'],[])
   self.assertEqual({f['heroId'] for f in self.note['facts']},{'doctrine','sombra','roadhog','kiriko','dmon'})
   self.assertEqual(next(f['to'] for f in self.note['facts'] if f['heroId']=='roadhog' and f['stat']=='cooldown'),1.25)
+ def test_official_accented_hero_names(self):
+  self.assertEqual(p.HERO_ALIASES.get(p.normalize('Lúcio')),'lucio')
+  self.assertEqual(p.HERO_ALIASES.get(p.normalize('Torbjörn')),'torbjorn')
+  self.assertEqual(p.HERO_ALIASES.get(p.normalize('D.Va')),'dva')
  def test_unknown_rework_not_applied(self):
   self.assertIn('reason',p.classify('sombra','Hack','Ability removed.'))
   self.assertIn('reason',p.classify(None,None,'Base health increased from 225 to 250.'))

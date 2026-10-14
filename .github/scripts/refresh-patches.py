@@ -1,5 +1,5 @@
 """Official live patch collector. No dependencies; never executes publisher content."""
-import argparse, hashlib, json, os, re, tempfile
+import argparse, hashlib, json, os, re, tempfile, unicodedata
 from datetime import datetime, timezone, timedelta
 from html.parser import HTMLParser
 from pathlib import Path
@@ -7,7 +7,7 @@ from urllib.request import Request, urlopen
 
 ORIGIN='https://overwatch.blizzard.com'
 HERO_IDS='dmon dva genji domina doctrine doomfist ramattra lifeweaver reinhardt wrecking-ball roadhog lucio reaper mauga mercy mei moira mizuki bastion baptiste vendetta venture brigitte sojourn soldier-76 sombra sigma symmetra sierra shion ana anran ashe echo emre orisa wuyang widowmaker winston illari zarya junker-queen junkrat jetpack-cat zenyatta juno cassidy kiriko torbjorn tracer pharah freja hanzo hazard'.split()
-normalize=lambda s: re.sub('[^a-z0-9]','',s.lower())
+normalize=lambda s: re.sub('[^a-z0-9]','',unicodedata.normalize('NFKD',s).lower())
 HERO_ALIASES={normalize(h):h for h in HERO_IDS}
 class Node:
     def __init__(self,tag='',attrs=(),parent=None):self.tag=tag;self.attrs=dict(attrs);self.parent=parent;self.children=[];self.parts=[]
@@ -119,7 +119,7 @@ def merge(previous,notes,now):
         if p['date']>=old['baselineDate']:by_date[p['date']]=p
     patches=sorted(by_date.values(),key=lambda x:x['date'])
     new={**old,'latestDate':max([old['baselineDate'],*[p['date'] for p in patches]]),'patches':patches}
-    if new!=old:new['detectedAt']=now.isoformat()
+    if new!=old:new['detectedAt']=now.isoformat(timespec='milliseconds').replace('+00:00','Z')
     return validate(new)
 
 def collect(previous,now,fetch):
