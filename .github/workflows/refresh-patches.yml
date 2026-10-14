@@ -1,0 +1,40 @@
+name: Refresh official Overwatch patches
+on:
+  schedule:
+    - cron: '31 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: johap-public-data-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - name: Test official patch parser and safe failure handling
+        run: python3 -m unittest discover -s .github/scripts -p 'test_refresh_patches.py'
+      - name: Check official current and previous month
+        run: python3 .github/scripts/refresh-patches.py --refresh
+      - name: Validate completed patch snapshot
+        run: python3 .github/scripts/refresh-patches.py
+      - name: Publish validated changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REFRESH_BRANCH: ${{ github.ref_name }}
+        run: |
+          if git diff --quiet -- data/live-patches.json; then
+            echo "No patch changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- data/live-patches.json
+          git commit -m "Apply official Overwatch patch facts"
+          git push origin "HEAD:${REFRESH_BRANCH}"
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds"
