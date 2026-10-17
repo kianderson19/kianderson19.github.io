@@ -1,0 +1,757 @@
+{
+  "schemaVersion": 1,
+  "modelId": "johap-portrait-cnn-v1-20261017",
+  "inputSize": 48,
+  "normalization": "rgb-div-127.5-minus-1",
+  "layout": "NCHW",
+  "classes": [
+    "ana",
+    "anran",
+    "ashe",
+    "baptiste",
+    "bastion",
+    "brigitte",
+    "cassidy",
+    "dmon",
+    "doctrine",
+    "domina",
+    "doomfist",
+    "dva",
+    "echo",
+    "emre",
+    "freja",
+    "genji",
+    "hanzo",
+    "hazard",
+    "illari",
+    "jetpack-cat",
+    "junker-queen",
+    "junkrat",
+    "juno",
+    "kiriko",
+    "lifeweaver",
+    "lucio",
+    "mauga",
+    "mei",
+    "mercy",
+    "mizuki",
+    "moira",
+    "orisa",
+    "pharah",
+    "ramattra",
+    "reaper",
+    "reinhardt",
+    "roadhog",
+    "shion",
+    "sierra",
+    "sigma",
+    "sojourn",
+    "soldier-76",
+    "sombra",
+    "symmetra",
+    "torbjorn",
+    "tracer",
+    "vendetta",
+    "venture",
+    "widowmaker",
+    "winston",
+    "wrecking-ball",
+    "wuyang",
+    "zarya",
+    "zenyatta",
+    "__unknown__"
+  ],
+  "unknownClass": "__unknown__",
+  "weightsFile": "portrait-v1.bin",
+  "weightsSha256": "2c24ba283f083ff69f2ebc219e12f66d23e70018d7bb6dabe68e129c05ea8a0e",
+  "weightsBytes": 347452,
+  "layers": [
+    {
+      "name": "conv1",
+      "type": "conv2d",
+      "shape": [
+        12,
+        3,
+        5,
+        5
+      ],
+      "weightOffset": 0,
+      "biasOffset": 900,
+      "activation": "relu",
+      "stride": 2,
+      "padding": 2
+    },
+    {
+      "name": "conv2",
+      "type": "conv2d",
+      "shape": [
+        24,
+        12,
+        3,
+        3
+      ],
+      "weightOffset": 912,
+      "biasOffset": 3504,
+      "activation": "relu",
+      "stride": 2,
+      "padding": 1
+    },
+    {
+      "name": "conv3",
+      "type": "conv2d",
+      "shape": [
+        32,
+        24,
+        3,
+        3
+      ],
+      "weightOffset": 3528,
+      "biasOffset": 10440,
+      "activation": "relu",
+      "stride": 2,
+      "padding": 1
+    },
+    {
+      "name": "conv4",
+      "type": "conv2d",
+      "shape": [
+        48,
+        32,
+        3,
+        3
+      ],
+      "weightOffset": 10472,
+      "biasOffset": 24296,
+      "activation": "relu",
+      "stride": 2,
+      "padding": 1
+    },
+    {
+      "name": "fc1",
+      "type": "linear",
+      "shape": [
+        128,
+        432
+      ],
+      "weightOffset": 24344,
+      "biasOffset": 79640,
+      "activation": "relu"
+    },
+    {
+      "name": "fc2",
+      "type": "linear",
+      "shape": [
+        55,
+        128
+      ],
+      "weightOffset": 79768,
+      "biasOffset": 86808,
+      "activation": "none"
+    }
+  ],
+  "thresholds": {
+    "minimumScore": 0.78,
+    "minimumMargin": 0.32
+  },
+  "validation": {
+    "kind": "synthetic-only",
+    "development": {
+      "examples": 3420,
+      "knownExamples": 3240,
+      "top1KnownAccuracy": 0.9777777777777777,
+      "unknownExamples": 180,
+      "unknownTop1Rejection": 0.9888888888888889,
+      "knownCoverage": 0.854320987654321,
+      "acceptedKnownAccuracy": 0.9996387283236994,
+      "unknownFalseAcceptRate": 0.0,
+      "knownFalseAcceptRate": 0.00030864197530864197
+    },
+    "hardHoldout": {
+      "examples": 3420,
+      "knownExamples": 3240,
+      "top1KnownAccuracy": 0.9120370370370371,
+      "unknownExamples": 180,
+      "unknownTop1Rejection": 0.9555555555555556,
+      "knownCoverage": 0.6981481481481482,
+      "acceptedKnownAccuracy": 0.9951370468611848,
+      "unknownFalseAcceptRate": 0.0,
+      "knownFalseAcceptRate": 0.0033950617283950617
+    },
+    "actualCameraStatus": "not-validated"
+  },
+  "training": {
+    "seed": 241017,
+    "augmentationTrainSeed": 1381017,
+    "augmentationDevelopmentSeed": 720611,
+    "augmentationHardHoldoutSeed": 984213,
+    "epochs": 56,
+    "examples": 22800,
+    "sourceAssets": [
+      {
+        "path": "apps/web/public/icons/ana.png",
+        "sha256": "73fb1d5a270d5de86e13bc5b50ca2bb454e2e8aa967118ba2c49fe85ee095afc"
+      },
+      {
+        "path": "apps/web/public/icons/anran.png",
+        "sha256": "e226e7ae088f0b1c0e31cde035395bdb8fe00bdfaf08727ea64296f982839186"
+      },
+      {
+        "path": "apps/web/public/icons/ashe.png",
+        "sha256": "9a0e7556fe8456546d67e2a2d1f733af8e48cfbc4a247ab74b98df20577ecbf4"
+      },
+      {
+        "path": "apps/web/public/icons/baptiste.png",
+        "sha256": "d87c54585e6c3d4c5235eed991337c69f541adf476511b86cc048b20641e6a3d"
+      },
+      {
+        "path": "apps/web/public/icons/bastion.png",
+        "sha256": "83555a0d9b61d358c458d367bb595d29236aeb7e46244a2f4204696b6730ecad"
+      },
+      {
+        "path": "apps/web/public/icons/brigitte.png",
+        "sha256": "7385528b715fd84d2912d7c8f0fcb08a3f2d229a8074259a6e2c96b3f1f61b30"
+      },
+      {
+        "path": "apps/web/public/icons/cassidy.png",
+        "sha256": "b9575ffd1992d74f01684b1ff07d8eacde7648c606fd6b2b6e071e1c560f8beb"
+      },
+      {
+        "path": "apps/web/public/icons/dmon.png",
+        "sha256": "8741cea3b9a17eb666539897f12dccbc599f5a7b2568f236c5c87da92634a7e3"
+      },
+      {
+        "path": "apps/web/public/icons/doctrine.png",
+        "sha256": "2492a15c575c12314907d0d77501ec337b4d56796bc7f03e5dfb50d415612bae"
+      },
+      {
+        "path": "apps/web/public/icons/domina.png",
+        "sha256": "b2fa2b1734e804d067c254fdb2fa022cd7c4b38859cd8d59f91ad832958e130d"
+      },
+      {
+        "path": "apps/web/public/icons/doomfist.png",
+        "sha256": "76a29a0801d5312f9129b060b6c4fc5e138417d2b4e14b58a864c353a2aa3487"
+      },
+      {
+        "path": "apps/web/public/icons/dva.png",
+        "sha256": "91f5984a0dba97a0663a5f65092463f3c3a5bc2c84bbbfa1520f6f09c44065b4"
+      },
+      {
+        "path": "apps/web/public/icons/echo.png",
+        "sha256": "7880d91361fcd3502f567b19fa494b029c403ef7634dfcd570aa92cdc77a1454"
+      },
+      {
+        "path": "apps/web/public/icons/emre.png",
+        "sha256": "c2af6baa0c4dbb539eda212e9e82a129e46389e22e99e6d7cb12056a8ded0e30"
+      },
+      {
+        "path": "apps/web/public/icons/freja.png",
+        "sha256": "b638bf7bedd57580568f6556f36bf7af38760d18698ce32d60209f5547c97bae"
+      },
+      {
+        "path": "apps/web/public/icons/genji.png",
+        "sha256": "98fb15a1768d36be63b38505c817378895579c4c6a0ad93d993eb7fea12e80fe"
+      },
+      {
+        "path": "apps/web/public/icons/hanzo.png",
+        "sha256": "9a930ab4feed82cadcb6ce11b256c435065dd19065f522e4bb4d9edd297d6226"
+      },
+      {
+        "path": "apps/web/public/icons/hazard.png",
+        "sha256": "eb35388c1f98bf52a7d7823f118331ad742e242e4ca64a617974c825f8dd659c"
+      },
+      {
+        "path": "apps/web/public/icons/illari.png",
+        "sha256": "88c335aadac81c60beb48269cbeadf17f2f5d1ebc3e66cdb1e0ae646004c1e10"
+      },
+      {
+        "path": "apps/web/public/icons/jetpack-cat.png",
+        "sha256": "5b52968753617963b2ffea5b923231a7cc4bee54d7a1cfff6e122ddaee58903e"
+      },
+      {
+        "path": "apps/web/public/icons/junker-queen.png",
+        "sha256": "18b796a2393e27e866b2bebdaedc832b6ca38ed2ccfeaab87ba1836a9c1fa50f"
+      },
+      {
+        "path": "apps/web/public/icons/junkrat.png",
+        "sha256": "b84ce15a3b4b2fb2c3ab5b08a23f59feeb5596fbdadd855c29c7f1126b87bd17"
+      },
+      {
+        "path": "apps/web/public/icons/juno.png",
+        "sha256": "62b60f11236c978528e7fcafd8e55eba4cbe82688ca0dc286847ee610d227707"
+      },
+      {
+        "path": "apps/web/public/icons/kiriko.png",
+        "sha256": "4493ecb51aa37bfb0372f87718f81c66a831b43b80d392070766c29bd83623c5"
+      },
+      {
+        "path": "apps/web/public/icons/lifeweaver.png",
+        "sha256": "73c3ce61f803e725ad927fb5ccdd57f62ff4d6c44f74700b9a0683b845a0d3f3"
+      },
+      {
+        "path": "apps/web/public/icons/lucio.png",
+        "sha256": "e17ad5852d855b3d2c6f92b385a4317ce989dda178ddeca4787db6bc7665e963"
+      },
+      {
+        "path": "apps/web/public/icons/mauga.png",
+        "sha256": "5e36f9f090ff2d223f265816556eb0a0b974da76efd60a71ebd5f35bb5d76205"
+      },
+      {
+        "path": "apps/web/public/icons/mei.png",
+        "sha256": "b6ba931fb6b8d9b07b800431fc8b86c80702b60ef18da7fab1a5f1606ea354fb"
+      },
+      {
+        "path": "apps/web/public/icons/mercy.png",
+        "sha256": "7811987a2f8cfceac4d2f7cacfe27e9025bb381daf39ad90561b4cc09c63347a"
+      },
+      {
+        "path": "apps/web/public/icons/mizuki.png",
+        "sha256": "e4b1958754c9c87ccf7ed79ae85fdb948359dff3e5153dd68222034d11d37ace"
+      },
+      {
+        "path": "apps/web/public/icons/moira.png",
+        "sha256": "e3e0ff4ffa1bf94c6c4ce92be60d4bba67f81caf4877df34901ca4c6441fbcb4"
+      },
+      {
+        "path": "apps/web/public/icons/orisa.png",
+        "sha256": "3d4792da0a24eddbe828dbcf9a3fa3ea04899f087994c7d1010bc56a0c012712"
+      },
+      {
+        "path": "apps/web/public/icons/pharah.png",
+        "sha256": "fcd1e02becf42d10e0305858a2d0be3c8c551cc935fec0d30c5a239ae8604390"
+      },
+      {
+        "path": "apps/web/public/icons/ramattra.png",
+        "sha256": "b02996028f6c84da061ccbc9236b219b792590d0a5cfd7f4e95960e756b1a005"
+      },
+      {
+        "path": "apps/web/public/icons/reaper.png",
+        "sha256": "8fe325057be63bcbc02b919b95344f4fe36a5e988f17191841848e82adf86cac"
+      },
+      {
+        "path": "apps/web/public/icons/reinhardt.png",
+        "sha256": "3902512eb514a34b0ec72ac5a8d167ce0fccabdfedeaeb6516e96856df8ecb8c"
+      },
+      {
+        "path": "apps/web/public/icons/roadhog.png",
+        "sha256": "b274fdd87d11ca102632b4e6552240a9d9bf0104e072769fb7be43965ff808ba"
+      },
+      {
+        "path": "apps/web/public/icons/shion.png",
+        "sha256": "da7b8a2b3c94eab7dfe386d7012464b120b55534e3355e7daab461dacf8a60b3"
+      },
+      {
+        "path": "apps/web/public/icons/sierra.png",
+        "sha256": "ea5809e163ba16468ab97e77f0d0bfeeec0ce42432b3daee1ba1eea5d0694d1d"
+      },
+      {
+        "path": "apps/web/public/icons/sigma.png",
+        "sha256": "19b49ffb05c49def055e03ec9f25da4766fac50d03601dda4014b948936d494c"
+      },
+      {
+        "path": "apps/web/public/icons/sojourn.png",
+        "sha256": "08c22d57e46b82b1d1f7aacc633d277bd14e7c3f11111f5b6db8180748654bc0"
+      },
+      {
+        "path": "apps/web/public/icons/soldier-76.png",
+        "sha256": "0f9cc947e5c68b753f05f700496ee983dc42bcb0706c7cb10b168bde4bf62086"
+      },
+      {
+        "path": "apps/web/public/icons/sombra.png",
+        "sha256": "7f608b05f268c8ab06e77331afc6c8dd0f355eec2a2fdd2196bf74d6fa775ffe"
+      },
+      {
+        "path": "apps/web/public/icons/symmetra.png",
+        "sha256": "51f81d6ea59374aeba3a049b1924230920b29889661fea256c82d35f957a3051"
+      },
+      {
+        "path": "apps/web/public/icons/torbjorn.png",
+        "sha256": "40de1c495856f2ad83537c5d276b413e4411de6f5ccf781fb7acfdec5a86c2ed"
+      },
+      {
+        "path": "apps/web/public/icons/tracer.png",
+        "sha256": "174b701ba628fec6663f916e49cf329c9b176d96d8f392aa55d3438a37f4b045"
+      },
+      {
+        "path": "apps/web/public/icons/vendetta.png",
+        "sha256": "2d68c0bbea81a802e14f532a853d7a6717e919f52120790c0d52a4e172af66c5"
+      },
+      {
+        "path": "apps/web/public/icons/venture.png",
+        "sha256": "c5b9f17652c7864019a4e59ff9c6bfef234566be668ab1fb5de1384b6768f47c"
+      },
+      {
+        "path": "apps/web/public/icons/widowmaker.png",
+        "sha256": "b0a52534a6e2fc5518f7b23ac18bf56514df3766159d4953a5fe9147402d053a"
+      },
+      {
+        "path": "apps/web/public/icons/winston.png",
+        "sha256": "7d32e3cb61b73b8893a4c38252ec0bb1bfa567b6c5815ba0da2cc2b2a1bd7af4"
+      },
+      {
+        "path": "apps/web/public/icons/wrecking-ball.png",
+        "sha256": "3da795e091dd6d60cbbfc01067b1b9921993ebcfed69d774174578e0d7def43f"
+      },
+      {
+        "path": "apps/web/public/icons/wuyang.png",
+        "sha256": "46c6b6bb7f025cbfb2e677564cb564c9537e2d3cfda7996a76728b3c38765094"
+      },
+      {
+        "path": "apps/web/public/icons/zarya.png",
+        "sha256": "86d154a7a296992ee56cbc9c5390b4b8e2e009100f09e1f4ffd2ae7882bd911e"
+      },
+      {
+        "path": "apps/web/public/icons/zenyatta.png",
+        "sha256": "d072f3ab6425f9a7b99669fcadd440727220dd2e66acf6267e6912be60d01e21"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/ana.png",
+        "sha256": "e12550aba417f4fdf1210ec68c2ac5439f9b6ea22a77bb508b3e89ff6e825de3"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/anran.png",
+        "sha256": "1bac9caa50da0d93f35794c9c45cbaf7d0b647201409e664f19a3dc387bca715"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/ashe.png",
+        "sha256": "876279ca634a2e8e85127de61d5cddd9fba0f142cc3c4fc436903dceaa299322"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/baptiste.png",
+        "sha256": "23ecee4f659598bcc8ffe432ce555395b03a12c3e2e11721d301e00712cacfff"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/bastion.png",
+        "sha256": "b36f82cfb230a8141c8c2dec0499f8375d91c99c5d155dbae8c961fc926a0fb9"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/brigitte.png",
+        "sha256": "96f1da34d839d00b301f5c0bb9a8c1609c449561d17aa4cf410309cf27f09b4e"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/cassidy.png",
+        "sha256": "0602f79a821efdf2e7c4ba6c3343f0042bb89442a8e959ee33f37b0101cf7a89"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/dmon.png",
+        "sha256": "a0b3bd115cd358fc697221f9535edaa9e8a0d3b141d315c4e06c06892aa4a6b6"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/domina.png",
+        "sha256": "ca955da30f2e6d360bcf8f50e88de53359e4e4515716c88deb0850c45a137098"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/doomfist.png",
+        "sha256": "35559824df845c0baf6e2edbe2968847938f080649f9c9e96f7888b48ddddff3"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/dva.png",
+        "sha256": "45e867f4d68da8ef2e79e513fbe02b69df7babd5fa91f0977e0b55b1bde99f23"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/echo.png",
+        "sha256": "40d27b400bbe229e304464971e2efee466909004aaa7504456ffbc83a849e3f5"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/emre.png",
+        "sha256": "f25d794af1e053cc1c3dc0e740e03d950287309ab4510fac1c359840bd7e9e49"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/freja.png",
+        "sha256": "d3fab9050dad2eb93715e6f40766b5afca97f36949969808535d72dae23d5abe"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/genji.png",
+        "sha256": "7ac059ff2d4a67d760697092e8d06ede62b444eca7e7a4e8815f91262e38aece"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/hanzo.png",
+        "sha256": "2f6e279c62a6c9486995d0f56ef298d9bfdff3cab077a83bd8595b4a8c52f5dc"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/hazard.png",
+        "sha256": "c5f452b606ed44b234ab8f66cf4e43114735de830b2ed1f603c1cdc7e51d4cb4"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/illari.png",
+        "sha256": "f2a8a331de4ebaeea1bc6f539e038b0c8098091eec29cddef0e61a5583bb6b9c"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/jetpack-cat.png",
+        "sha256": "547f9be1e92874dfd520d640af45840023ffc08c61169c759614bdbe1d73f10e"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/junker-queen.png",
+        "sha256": "b416c7e48f68bd72f98727a0ab84965de55e73dc9baa770ba5acf07350d50271"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/junkrat.png",
+        "sha256": "6dd6ff981fc3257a6fb589384861c800cc3d01a37e6d800d5cce768d5d83b090"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/juno.png",
+        "sha256": "e8f50b16b8bd6451cd92c3ac73bbb5c6e428f0a55502c07f40bda28dc5123221"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/kiriko.png",
+        "sha256": "b8ec36f13c93d4b53774eb02b4c01b17b3efe03ac9915905fd7b427cf759cb95"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/lifeweaver.png",
+        "sha256": "6ecea15e97af46e231f5708ebd356d4138a935cdda30393aa5e9b21a9e2fdba6"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/lucio.png",
+        "sha256": "1dfbb12651e6c91ec3c6b06e9339b058358526c48ebcf950fe8aee07f16f496b"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/mauga.png",
+        "sha256": "6f3ddd69b18532a4045858a6a04f068777ce9a0f74f2653eb4e330b2fe169763"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/mei.png",
+        "sha256": "1ed93e98d6196c026a8a4169288dacde26174d5fc2395ebe843e5c313911de40"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/mercy.png",
+        "sha256": "a88ab3cad03dc4f3184ff5d32d06a2cae87b53934b7b666790ef0e0f7b66a1ee"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/mizuki.png",
+        "sha256": "3aba91cd99cdfceb0ba81fa9d23f0e59971d6f0e05e98d66ec31a3beb12c3732"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/moira.png",
+        "sha256": "a93f5a3de6b1eb5d96c2a962bebaa5cd6a3ca11c2b5c863be08d56e81c3d2918"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/orisa.png",
+        "sha256": "3154efa4bac39e5d0b72fc6d3221fd1cb80863c0ddf0654a5e0f73b26287a9af"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/pharah.png",
+        "sha256": "05aac8ac7a9f9595ce0359201ddf7cfc71837fd157910b2830e29a6ce02b1d97"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/ramattra.png",
+        "sha256": "74e5bbb25ff23857b3f65c6f9fe8d114f78f7bd1c05538fa611fca5a290a329c"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/reaper.png",
+        "sha256": "e50100c6610d38e2afcf148b5a4bb6717aeabf6cf79d9cc8a5940adbd9db351f"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/reinhardt.png",
+        "sha256": "cf4e31c94d640d6a96c812ad04846d8f81013e12c43de6c949bcf6991856e863"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/roadhog.png",
+        "sha256": "a7ceb0d798393bae54a97ce2a8bd29ebac5dc9fec96020fa153b6af1eac83d88"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/shion.png",
+        "sha256": "f71aa97be11223e416cac028684313c20f96d90c0651f60bc61634f47190fe45"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/sierra.png",
+        "sha256": "e479cb52da7ada56e4e0ec0f9f19eed3c93150738516f11834f401b567dd245d"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/sigma.png",
+        "sha256": "f520f8751add1eaa46204cb6ba1f7af0eb01a22b7dd999b1890873809f3e7f58"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/sojourn.png",
+        "sha256": "d496f2496ae523bcd66179dde63fdaea4b3619bc31e4d493938bfca15940384c"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/soldier-76.png",
+        "sha256": "66ed18466e269aaa85d42d33611d523e849c1a1ed3bc742b3534596d1c8f4e95"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/sombra.png",
+        "sha256": "c3488d4debda898f6c2cf409a27816bc8d2b059c5482f497da7fbc2a1fbc7a5f"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/symmetra.png",
+        "sha256": "1d8b955f70c1a4521d9316546c9475b97a129b8df27a14f0faf4048c06304e6c"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/torbjorn.png",
+        "sha256": "f03a4b2e27cf635a33487a3c7f9e259e414f60a0d6289bb945281d868a64acfd"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/tracer.png",
+        "sha256": "498f506647d18ae3965d322afca89221a66fc527bc8b471e2f166879c5369644"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/vendetta.png",
+        "sha256": "15cec164618b522a5f947ee3bd26bd39c7a9526709a715fb4bd8973ddec19295"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/venture.png",
+        "sha256": "ee1f2e45db5b35f6221dbc2fe42f4f7b7b6c1c35c7c3bc85f92ff4c1c5c18610"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/widowmaker.png",
+        "sha256": "120d0172755a8c9ac926331cf88c6f71f9039c5930d58e6c86ec37a025654f2d"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/winston.png",
+        "sha256": "dfc751db7a81603474854337a64647eea8fbff18e76420f0beb31f038f454e29"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/wrecking-ball.png",
+        "sha256": "8967c532682aa5ebf8d14e1832ec57ed87f7dee9fa80ea1b29229db6a8e72b92"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/wuyang.png",
+        "sha256": "3652307dc21cdf913d922ad7580fe1e6f605ca96f30cb6816b2868b1c4e9a579"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/zarya.png",
+        "sha256": "bafd7f8f8459ac8879ece4e80a1863ebdc11ee218426bdc57fa878b9e74ec4fa"
+      },
+      {
+        "path": "apps/web/public/icons-scoreboard/zenyatta.png",
+        "sha256": "8ffb5e62e7559c7557402ef151e9dbf5417c98f55417b7d6dd4ed8d9286d3b5d"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/ana.png",
+        "sha256": "813ce67a298300d2ea07f7b05838569b8841435a6a2a8e7f215b9978b77a52eb"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/ashe.png",
+        "sha256": "f4652957035f14eef46697cc554da0722bd9ea4e77d29f429e042903d707d766"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/baptiste.png",
+        "sha256": "32e91f5925859108b97fcaba28a1e070ae94c4016d38c91a1f94867c1350744b"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/bastion.png",
+        "sha256": "097e3e80ca63c28fedf11107d52e15297d219a786b46fb6a099a511085a1572e"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/brigitte.png",
+        "sha256": "c28c63189128d5dfe30fbcac6e402b5668ffb0fafcd3e00d1e361fdd1d008cc1"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/cassidy.png",
+        "sha256": "e33cce256f01e6f65e6a821595076309a558c96630b7d9e5eed744b258e78b27"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/doomfist.png",
+        "sha256": "7440d72c84f4bc41a333fc7189558f5cc701529e92191a3d809b4a75b1a5dbc0"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/dva.png",
+        "sha256": "b5891a9fc6f41b28caad0acdf34f7e1121e2275b1f99cf8a9dd718b6a4ca6ec5"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/echo.png",
+        "sha256": "d76e3e90e1e04faf7b460d25839f23f83995c8f7cb606c92cb7dcf27272d0b0c"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/genji.png",
+        "sha256": "7233f42bcdcc30d21480fd221d3236a4259127ea6e1f92e56acb1b3b0cf1b861"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/hanzo.png",
+        "sha256": "27f2f780550deba67089d9ef56efd33182334b34b70c2d1314408a40c98373ae"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/junkrat.png",
+        "sha256": "2f51cb175ae79dc09ea4b65f6dee3beeb3b4935090284fde3a4c1bd7098b981d"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/lucio.png",
+        "sha256": "e95b5c3f1ded9bbae610bbd529175327c970b0b463a4fa96af2436c2a2a520c1"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/mei.png",
+        "sha256": "7c4ba259aeb8f1dbbfad09400684e0c2aaaffc05338104378b9752c1beb074f8"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/mercy.png",
+        "sha256": "fb16c1f9adbfdde07cfef13cd0d19160f691df962a045e04bbbb8da7224f69af"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/moira.png",
+        "sha256": "d74daeb46fdbbb58ad66b979ba09debadac0edeb41cd81606c0bc8e4dbcf7b24"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/orisa.png",
+        "sha256": "88bcc10b45359f26ad035b2729d38be9339d6fdff5ed7b8420375b60c027e57f"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/pharah.png",
+        "sha256": "cefac5e8bec5c300f6a39d07fc60b561ca3edda6f9b63444fb99953cb2f79374"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/reaper.png",
+        "sha256": "12c7ea2c578460c3cd902797b3afcfea32f373065f749f09953f4d2f91ec4afe"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/reinhardt.png",
+        "sha256": "4e42327196a464baba29393900f80822782818c817d5095000d1776824c95c31"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/roadhog.png",
+        "sha256": "68f6610e9b83c6fce0ca7b400606a1cfd559b9c68ab8309126fed7fbd7abe3d9"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/sigma.png",
+        "sha256": "22d199f8955089051c877d6da15f74215606c0ebee0516a7133a07262742646c"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/soldier-76.png",
+        "sha256": "48adf0d994e4507ee081b701eec733ee9505a9e3fcbf6fe633b57a55ee2b50bd"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/sombra.png",
+        "sha256": "3f7afa5947fe9d2882346a4e44c43c7489ab1758d06ffb350ddcb1d771ee49ef"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/symmetra.png",
+        "sha256": "c82c2beb2539f3bbe4566275ca82db93e3ed4807487ab255deebb1dd48b9bf0d"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/torbjorn.png",
+        "sha256": "8f156af5192a99a8062038634f93ad9105a04b9a29466dfb8094001bdacd3ec5"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/tracer.png",
+        "sha256": "b9a878ac0d079d4b384eaf5a57335d30f7940e655d05331868c38cc256d355ce"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/widowmaker.png",
+        "sha256": "43f651662fbc9cc1d8e7af701a6c462aee952badf60d24e5f0d8e0351bfd0a1b"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/winston.png",
+        "sha256": "1295ce07361fc79380441861f57b9227c5496ac728eafb041631834e2c66f66d"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/wrecking-ball.png",
+        "sha256": "388986678490aefcb7394251bb4511aadc1c17494783335591a36d0eca24df6e"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/zarya.png",
+        "sha256": "f24a2352c23c79fd336f758900d7668265d512123cfaf05b0e90e7ca855635dd"
+      },
+      {
+        "path": "apps/web/public/icons-legacy/zenyatta.png",
+        "sha256": "7042002f492f2c28edcd85c6e66f347828aaa6dd20357ae038f52671e3cf9ee9"
+      }
+    ],
+    "excluded": [
+      "all scoreboard fixtures",
+      "all user photographs",
+      "icons-scoreboard-variants (user screenshot derived)",
+      "all pretrained weights"
+    ],
+    "selectedCheckpointEpoch": 53,
+    "torchVersion": "2.14.1",
+    "numpyVersion": "2.5.4"
+  }
+}

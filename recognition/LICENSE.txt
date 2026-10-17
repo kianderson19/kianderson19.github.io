@@ -1,0 +1,23 @@
+JOHAP portrait classifier notices
+
+The portrait classifier implementation and newly trained numerical model are
+part of the JOHAP project and are distributed under the project's terms.
+This notice does not change ownership of the application or grant rights to
+third-party artwork.
+
+Training hero artwork: Copyright Blizzard Entertainment, Inc. All rights
+reserved. Source paths and content hashes are recorded in portrait-v1.json.
+The pre-existing icon manifests retain the artwork provenance. No permission
+to reuse Blizzard trademarks or artwork is granted by this classifier notice.
+
+No third-party pretrained model, ImageNet weights, Ultralytics model/runtime,
+ONNX Runtime, or PyTorch runtime is included in the application model package.
+PyTorch (BSD-style license), NumPy (BSD-style license), and Pillow (HPND/MIT-CMU
+license) were used only as offline development/training tools. Their license
+notices are available in the corresponding installed packages and upstream:
+https://github.com/pytorch/pytorch/blob/main/LICENSE
+https://github.com/numpy/numpy/blob/main/LICENSE.txt
+https://github.com/python-pillow/Pillow/blob/main/LICENSE
+
+Model scores are uncalibrated classifier scores. See MODEL-CARD.md for the
+training provenance, synthetic-only validation scope and limitations.
