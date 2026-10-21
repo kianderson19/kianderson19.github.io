@@ -9,6 +9,8 @@ ORIGIN='https://overwatch.blizzard.com'
 HERO_IDS='dmon dva genji domina doctrine doomfist ramattra lifeweaver reinhardt wrecking-ball roadhog lucio reaper mauga mercy mei moira mizuki bastion baptiste vendetta venture brigitte sojourn soldier-76 sombra sigma symmetra sierra shion ana anran ashe echo emre orisa wuyang widowmaker winston illari zarya junker-queen junkrat jetpack-cat zenyatta juno cassidy kiriko torbjorn tracer pharah freja hanzo hazard'.split()
 normalize=lambda s: re.sub('[^a-z0-9]','',unicodedata.normalize('NFKD',s).lower())
 HERO_ALIASES={normalize(h):h for h in HERO_IDS}
+# Reviewed text, not a date/title allowlist: edits must return to manual review.
+REVIEWED_NON_BALANCE={('2026-10-20','803192629cab3f7d4132f22f1d6d807e644af030dfed8a738b258602e8e2d765'):{'kind':'non-balance','summary':'도전 과제와 PC 컨트롤러 오류 수정. 영웅 수치·상성 변경 없음.'}}
 class Node:
     def __init__(self,tag='',attrs=(),parent=None):self.tag=tag;self.attrs=dict(attrs);self.parent=parent;self.children=[];self.parts=[]
     def has(self,cls):return cls in self.attrs.get('class','').split()
@@ -44,6 +46,13 @@ def classify(hero_id,ability,text):
     if not ability and stat not in {'health','armor','shields'}:return {'heroId':hero_id,'ability':None,'reason':'기술 대상 검토 필요'}
     return {'heroId':hero_id,'ability':ability,'stat':stat,'label':label,'from':before,'to':after,'unit':unit}
 
+def transport_notice(section):
+    titles=section.all('PatchNotes-sectionTitle');descriptions=section.all('PatchNotes-sectionDescription')
+    if len(titles)!=1 or len(descriptions)!=1 or titles[0].text()!='Hotfix Update':return False
+    description=descriptions[0].text()
+    # Only replay availability boilerplate is safe to ignore without a review.
+    return section.text()[len(titles[0].text()):].strip()==description and bool(re.fullmatch(r'This is a hotfix update\. Replay codes from the (?:January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}(?:, \d{4})? patch are still available\.',description))
+
 def parse_notes(content,url):
     tree=Tree();tree.feed(content)
     blocks=tree.root.all('PatchNotes-patch');notes=[]
@@ -52,6 +61,8 @@ def parse_notes(content,url):
         anchors=[n.attrs.get('id','') for n in block.descendants() if re.fullmatch(r'patch-\d{4}-\d{2}-\d{2}',n.attrs.get('id',''))]
         if len(anchors)!=1:raise ValueError('Ambiguous patch date')
         date=anchors[0][6:];facts=[];pending=[];recognized=0
+        digest=hashlib.sha256(block.text().encode()).hexdigest()
+        review=REVIEWED_NON_BALANCE.get((date,digest))
         for section in block.all('PatchNotes-section'):
             if section.has('PatchNotes-section-hero_update'):
                 updates=section.all('PatchNotesHeroUpdate')
@@ -75,12 +86,22 @@ def parse_notes(content,url):
                 if general:pending.append({'heroId':None,'ability':None,'reason':'영웅 공통 규칙 변경 검토 필요'})
             elif section.has('PatchNotes-section-map_update') or section.has('PatchNotes-section-bug_fix'):
                 if section.text():pending.append({'heroId':None,'ability':None,'reason':'맵·게임 판정 변경 검토 필요'})
+            elif section.text() and not transport_notice(section):
+                # Blizzard also publishes gameplay fixes as generic paragraphs/lists.
+                if not (review and section.has('PatchNotes-section-generic_update')):
+                    pending.append({'heroId':None,'ability':None,'reason':'일반 패치·게임 규칙 변경 검토 필요'})
+        if not review and any(d==date for d,_ in REVIEWED_NON_BALANCE) and not pending:
+            pending.append({'heroId':None,'ability':None,'reason':'검토한 비밸런스 패치 원문 변경 검토 필요'})
         if not recognized and not pending:
-            # Cosmetic-only patches are detected, with no invented balance changes.
+            # Empty or changed markup cannot certify a new patch as harmless.
             titles=block.all('PatchNotes-sectionTitle')
             if any(re.search('hero|balance|map',n.text(),re.I) for n in titles):raise ValueError('Hero section changed; refusing incomplete update')
-        digest=hashlib.sha256(block.text().encode()).hexdigest()
-        notes.append({'date':date,'sourceUrl':url,'sourceSHA256':digest,'facts':facts,'pending':pending})
+            if date>'2026-10-13' and not review:
+                pending.append({'heroId':None,'ability':None,'reason':'패치 본문·변경 범위 확인 필요'})
+        note={'date':date,'sourceUrl':url,'sourceSHA256':digest,'facts':facts,'pending':pending}
+        # A text acknowledgment never clears independent map/hero/bug-fix flags.
+        if review and not facts and not pending:note['review']=dict(review)
+        notes.append(note)
     return notes
 
 def any_parent(node,cls):
@@ -101,6 +122,9 @@ def validate(snapshot):
         if not re.fullmatch(r'https://overwatch\.blizzard\.com/en-us/news/patch-notes/live/\d{4}/\d{2}/',patch['sourceUrl']):raise ValueError('Non-official source')
         if patch['date']<snapshot['baselineDate'] or patch['date']>snapshot['latestDate']:raise ValueError('Patch outside history')
         if not isinstance(patch['facts'],list) or not isinstance(patch['pending'],list) or len(patch['facts'])+len(patch['pending'])>1000:raise ValueError('Invalid changes')
+        if 'review' in patch:
+            review=REVIEWED_NON_BALANCE.get((patch['date'],patch.get('sourceSHA256')))
+            if not review or patch['review']!=review or patch['facts'] or patch['pending']:raise ValueError('Unverified non-balance review')
         for fact in patch['facts']:
             if fact['heroId'] not in HERO_IDS or fact['stat'] not in {x[0] for x in STATS.values()}:raise ValueError('Unknown fact scope')
             if fact['unit'] not in {'','%','秒','초','m'}:raise ValueError('Unknown unit')
@@ -149,5 +173,5 @@ def main():
         os.replace(tmp,file)
     finally:
         if os.path.exists(tmp):os.unlink(tmp)
-    print(f"Applied official numeric facts through {result['latestDate']}; semantic changes remain explicit pending items")
+    print(f"Validated official patch snapshot through {result['latestDate']}; unreviewed changes remain explicit pending items")
 if __name__=='__main__':main()
