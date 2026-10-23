@@ -17,3 +17,67 @@ Windows ZIP 시작 검사는 수동 실행하는 GitHub Actions에 있습니다.
 Operator: Johap. Questions and bug reports: https://github.com/kianderson19/johap/issues
 
 This is an independent fan project, not affiliated with Blizzard Entertainment. Game images and trademarks belong to their respective owners. Runtime libraries retain their accompanying licence notices.
+
+## Cloudflare Static Assets
+
+The optional Cloudflare deployment uses Workers Static Assets only: no Worker script,
+database, KV/R2 binding, paid compute configuration, or domain route is declared.
+The existing GitHub Pages site and its daily patch/six-hour statistics workflows stay in place.
+`johap.lol` is a planned domain; this configuration initially publishes only a
+`johap.<account-subdomain>.workers.dev` address after an operator deploys it.
+
+Workers Builds Git integration is the primary deployment path. Connect this public repository's `main` branch,
+use the repository root, and set:
+
+```text
+Build command:  python3 -B .github/scripts/package-cloudflare.py
+Deploy command: npx --yes wrangler@4.152.0 deploy --config wrangler.json
+Node version:  22 or newer
+```
+
+The packaging command uses Python's standard library and requires no source build or
+package install. It copies an explicit public-file/directory allowlist into
+`.cloudflare-dist`, checks local HTML references, rejects symlinks and private-looking
+runtime paths, validates JSON syntax, and enforces 20,000 files/25 MiB per file.
+JSON and binary data are copied byte-for-byte. Existing published JS/CSS chunks are
+retained so an older open tab can still load its lazy chunks; source maps, repository
+metadata, workflow files, configuration and root README are excluded. New public root
+files or runtime directory types require an allowlist review.
+
+Run the packaging safeguards locally with:
+
+```sh
+python3 -B -m unittest discover -s .github/scripts -p 'test_package_cloudflare.py'
+python3 -B .github/scripts/package-cloudflare.py
+```
+
+The GitHub Actions deployment is a disabled fallback. Keep the repository variable
+`CLOUDFLARE_DEPLOY_ENABLED` unset or `false` while Workers Builds handles deployment.
+To deliberately use the fallback instead, disable the other automatic deployment
+controller, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as Actions secrets,
+then set that variable to exactly `true`. Scope the token to **Workers Scripts → Edit**
+on the specific account; this asset-only configuration does not manage zone/DNS
+routing. Never commit tokens or add them to the static asset directory.
+
+The fallback deploys the current `main` tip after a main-branch push, manual run, or
+successful same-repository/main scheduled or manual patch/statistics refresh. This
+also covers data commits made with `GITHUB_TOKEN`, which do not trigger another
+Actions push workflow. Deployments are serialized and do not consume artifacts from
+the triggering run. Existing refresh schedules and their GitHub Pages publication
+are unchanged. Verify the chosen Git integration actually deploys bot-authored data
+commits before relying on it for automatic data freshness.
+
+After the domain is purchased and its Cloudflare zone is active, attach the domain
+through the Worker dashboard, verify it, then set `workers_dev` to `false` if the
+temporary address should be disabled. Keep both `route` and `routes` absent when
+domain attachment is managed in the dashboard. Query-based views continue to use `/`;
+unknown paths use the existing `404.html`. Default HTML canonical redirects and all
+help/download/legal pages should be checked on the preview before domain cutover.
+
+Official references: [Static Assets](https://developers.cloudflare.com/workers/static-assets/),
+[limits](https://developers.cloudflare.com/workers/platform/limits/),
+[GitHub Actions authentication](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/),
+[custom domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/),
+[routing source of truth](https://developers.cloudflare.com/workers/wrangler/configuration/#source-of-truth).
+Action commit pins and Wrangler 4.152.0 were checked against their official release
+metadata on 2026-10-23; update pins only after reviewing and testing the replacement.

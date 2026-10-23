@@ -1,0 +1,57 @@
+name: Deploy JOHAP to Cloudflare
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Refresh official Overwatch patches
+      - Refresh official Overwatch statistics
+    branches: [main]
+    types: [completed]
+
+permissions:
+  contents: read
+
+# Always package the current main tip after the preceding deployment finishes.
+# A refresh workflow's head_sha predates the data commit it publishes.
+concurrency:
+  group: johap-cloudflare-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Optional fallback only. Leave disabled when Workers Builds Git integration is active.
+    if: >-
+      vars.CLOUDFLARE_DEPLOY_ENABLED == 'true' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository &&
+        (github.event.workflow_run.event == 'schedule' ||
+         github.event.workflow_run.event == 'workflow_dispatch')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout current published main
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Wrangler runtime
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+      - name: Test deployment boundaries
+        run: python3 -B -m unittest discover -s .github/scripts -p 'test_package_cloudflare.py'
+      - name: Package public runtime files
+        run: python3 -B .github/scripts/package-cloudflare.py
+      - name: Deploy static assets
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.152.0'
+          command: deploy --config wrangler.json
