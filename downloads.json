@@ -26,5 +26,6 @@
     "startup": "https://github.com/kianderson19/kianderson19.github.io/actions/runs/37746069142",
     "installer": "https://github.com/kianderson19/kianderson19.github.io/actions/runs/37746074214",
     "scope": "Windows Server 2022 자동 시작·설치·제거 검사. 실제 게임 호환성은 추가 검증 필요."
-  }
+  },
+  "contentReviewStatus": "retired-pending-original-guide-build"
 }

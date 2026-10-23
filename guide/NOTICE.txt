@@ -1,3 +1,9 @@
-overwatch.json and guide.json are the namu.wiki crawl shipped with
-https://github.com/scarf005/owc (AGPL-3.0-or-later), data updated 2026-09-15.
-The prose is namu.wiki text. This folder is that data, not the composition engine.
+JOHAP original guide dataset, revision 2026-10-23.
+The current overwatch.json and guide.json contain independently authored JOHAP
+editorial analysis and factual hero/map identifiers from official Blizzard sources.
+They replace the former third-party crawl at the same URLs. No NamuWiki prose,
+ratings, summaries, footnotes or source-body hashes are used to generate this dataset.
+Official mechanics and third-party video references are citations, not an endorsement
+or a grant of rights in Blizzard artwork. See /guide-methodology.html and /credits.html.
+The original editorial text may be used commercially by the JOHAP project owner.
+Third-party assets and software keep their own terms; this notice does not relicense them.
