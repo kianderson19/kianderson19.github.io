@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   deploy:
-    # Optional fallback only. Leave disabled when Workers Builds Git integration is active.
+    # Active production controller. Do not also enable Workers Builds Git integration.
     if: >-
       vars.CLOUDFLARE_DEPLOY_ENABLED == 'true' &&
       github.ref == 'refs/heads/main' &&
