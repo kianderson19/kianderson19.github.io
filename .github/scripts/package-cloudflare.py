@@ -13,7 +13,7 @@ from urllib.parse import unquote, urlsplit
 
 MAX_FILES = 20_000
 MAX_FILE_BYTES = 25 * 1024 * 1024
-ROOT_FILES = frozenset('''404.html _headers _redirects about.html ads.txt api-data.css api-data.html
+ROOT_FILES = frozenset('''404.html _headers _redirects about.html ads.txt app-ads.txt api-data.css api-data.html
 apple-touch-icon.png credits.html download.html downloads.json favicon.svg help.html
 hero-tiers.html index.html info.css info.js manifest.webmanifest methodology.html
 practical-compositions.html practical-guide.css privacy.html report-tables.css robots.txt

@@ -39,13 +39,14 @@ class PackageTests(unittest.TestCase):
         self.write('recognition/portrait-v1.bin', b'\x00\xffmodel')
         self.write('ocr/eng.traineddata.gz', b'compressed model')
         self.write('ads.txt', b'google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0\n')
+        self.write('app-ads.txt', b'google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0\n')
         self.write('_redirects', '/home / 302\n')
         result = p.package(self.root)
         output = self.root / '.cloudflare-dist'
         self.assertEqual(result['files'], len([f for f in output.rglob('*') if f.is_file()]))
         for name in ['data/live-patches.json', 'data/statistics-snapshot.json',
                      'assets/prior-release.js', 'recognition/portrait-v1.bin',
-                     'ocr/eng.traineddata.gz', 'ads.txt', '_headers', '_redirects', '404.html']:
+                     'ocr/eng.traineddata.gz', 'ads.txt', 'app-ads.txt', '_headers', '_redirects', '404.html']:
             self.assertEqual((output / name).read_bytes(), (self.root / name).read_bytes())
         for name in ['.git', '.github', '.env', 'wrangler.json', 'README.md',
                      'credentials.json', 'assets/main.js.map', 'data/source.ts']:
