@@ -1,9 +1,11 @@
-JOHAP original guide dataset, revision 2026-10-23.
-The current overwatch.json and guide.json contain independently authored JOHAP
-editorial analysis and factual hero/map identifiers from official Blizzard sources.
-They replace the former third-party crawl at the same URLs. No NamuWiki prose,
-ratings, summaries, footnotes or source-body hashes are used to generate this dataset.
-Official mechanics and third-party video references are citations, not an endorsement
-or a grant of rights in Blizzard artwork. See /guide-methodology.html and /credits.html.
-The original editorial text may be used commercially by the JOHAP project owner.
-Third-party assets and software keep their own terms; this notice does not relicense them.
+JOHAP independently authored guide dataset, revision 2026-10-24.
+The current guide exports contain JOHAP pair-by-pair editorial judgments and
+factual hero/map identifiers. Current official abilities and reviewed Korean and
+international authored documents and videos are references, not imported ratings.
+Document citations preserve URL, reviewed location, date and hash for provenance.
+Source prose, full wiki tables, footnotes and captions are not republished.
+Directly documented interactions and JOHAP mechanic-based inferences are marked
+separately. See /guide-methodology.html and /guide/document-coverage.json.
+Citations do not imply endorsement or a grant of third-party asset rights.
+Third-party assets and software retain their own terms; this notice does not
+relicense them. JOHAP is an unofficial fan project.
