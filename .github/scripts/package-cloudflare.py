@@ -15,7 +15,7 @@ MAX_FILES = 20_000
 MAX_FILE_BYTES = 25 * 1024 * 1024
 ROOT_FILES = frozenset('''404.html _headers _redirects about.html ads.txt app-ads.txt api-data.css api-data.html
 apple-touch-icon.png credits.html guide-methodology.html download.html downloads.json favicon.svg help.html
-hero-tiers.html index.html info.css info.js manifest.webmanifest methodology.html
+hero-tiers.html icon-192.png icon-512.png index.html info.css info.js manifest.webmanifest methodology.html og-image.png
 practical-compositions.html practical-guide.css privacy.html report-tables.css robots.txt
 score-guide.css score-guide.html score-guide.js sitemap.xml sw.js tactical-profiles.css
 tactical-profiles.html terms.html theme-init.js'''.split())

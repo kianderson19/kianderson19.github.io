@@ -5,7 +5,21 @@
   Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=()
   Cross-Origin-Opener-Policy: same-origin
   Strict-Transport-Security: max-age=31556952
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' blob: https://d15f34w2p8l1cc.cloudfront.net https://static.playoverwatch.com; font-src 'self'; connect-src 'self' https://overfast-api.tekrop.fr https://kianderson19.github.io https://johap.lol; form-action 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; worker-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' blob: https://d15f34w2p8l1cc.cloudfront.net https://static.playoverwatch.com; font-src 'self'; connect-src 'self' https://overfast-api.tekrop.fr https://kianderson19.github.io https://johap.lol https://cloudflareinsights.com; form-action 'self'; upgrade-insecure-requests
 
 /data/*
   Access-Control-Allow-Origin: *
+
+# Hashed build output never changes under the same name.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Images keep their names when replaced, so revalidate daily but serve the cached copy meanwhile.
+/icons/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/portraits/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/maps/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
