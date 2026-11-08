@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>난이도 디렉터 데모</title>
+<link rel="stylesheet" href="demo.css">
+<script type="module" src="demo.js"></script>
+</head>
+<body>
+<main class="app">
+  <section class="game" aria-label="게임">
+    <header class="hud">
+      <div class="stat"><span>점수</span><b id="score">0</b></div>
+      <div id="mode" class="mode" title="디렉터가 고른 지금의 난이도">—</div>
+      <div class="stat"><span>최고</span><b id="best">0</b></div>
+    </header>
+    <div class="board-wrap">
+      <div id="board" class="board"></div>
+      <p id="toast" class="toast" hidden></p>
+    </div>
+    <div id="tray" class="tray" aria-label="블록 3개"></div>
+    <p class="hint">블록을 끌어서 보드에 놓으세요. 가로·세로 한 줄을 채우면 지워져요.</p>
+  </section>
+
+  <aside class="panel" aria-label="디렉터 상태">
+    <section>
+      <h2>지금 디렉터의 판단</h2>
+      <dl>
+        <dt>규칙</dt><dd id="rule">—</dd>
+        <dt>이유</dt><dd id="reason">—</dd>
+        <dt>진행도</dt><dd><span id="progress-text">—</span><div id="progress"></div></dd>
+        <dt>시간</dt><dd id="elapsed">—</dd>
+        <dt>최고 기록</dt><dd id="guard">—</dd>
+      </dl>
+    </section>
+
+    <section>
+      <h2>플레이어 가치 <small id="value-text">—</small></h2>
+      <div id="value-parts" class="parts"></div>
+    </section>
+
+    <section>
+      <h2>플레이어 신호</h2>
+      <div class="controls">
+        <label>국가
+          <select id="country">
+            <option value="US">미국 (US)</option>
+            <option value="KR" selected>한국 (KR)</option>
+            <option value="JP">일본 (JP)</option>
+            <option value="FR">프랑스 (FR)</option>
+            <option value="BR">브라질 (BR)</option>
+            <option value="IN">인도 (IN)</option>
+            <option value="VN">베트남 (VN)</option>
+          </select>
+        </label>
+        <label>기기
+          <select id="device">
+            <option value="iPhone17,2">iPhone 16 Pro Max</option>
+            <option value="iPhone14,5" selected>iPhone 13</option>
+            <option value="SM-S928N">Galaxy S24 Ultra</option>
+            <option value="SM-A155N">Galaxy A15</option>
+            <option value="moto e13">저가형 안드로이드</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="bgm" checked> 배경음 켬</label>
+        <label class="check"><input type="checkbox" id="vibration" checked> 진동 켬</label>
+      </div>
+    </section>
+
+    <section>
+      <h2>광고 (시뮬레이션)</h2>
+      <div class="controls">
+        <label class="check"><input type="checkbox" id="ad-ready" checked> 보상형 광고 준비됨</label>
+        <label>준비된 광고 가격
+          <select id="ad-price">
+            <option value="cheap">싼 광고 $0.004</option>
+            <option value="normal" selected>보통 $0.010</option>
+            <option value="expensive">비싼 광고 $0.030</option>
+          </select>
+        </label>
+        <button type="button" id="ad-watch">광고 시청 1회 기록</button>
+      </div>
+      <p class="muted" id="ads-text">—</p>
+      <h3>리바이브 제안별 시청 (시청/제안)</h3>
+      <ul id="variants" class="variants"></ul>
+    </section>
+
+    <section>
+      <h2>설정</h2>
+      <div class="controls">
+        <label>프리셋
+          <select id="preset">
+            <option value="harvest">harvest · 영상 방식</option>
+            <option value="fair">fair · 실력만 반영</option>
+          </select>
+        </label>
+        <button type="button" id="new-game">새 게임</button>
+        <button type="button" id="reset" class="danger">기록 초기화</button>
+      </div>
+      <p class="muted" id="runs">—</p>
+    </section>
+
+    <section>
+      <h2>판단 기록</h2>
+      <ol id="log" class="log"></ol>
+    </section>
+  </aside>
+</main>
+
+<dialog id="revive">
+  <h2>이어서 할까요?</h2>
+  <p class="muted" id="revive-variant"></p>
+  <div id="revive-body"></div>
+  <div class="actions">
+    <button type="button" id="revive-yes" class="primary">광고 보고 이어하기</button>
+    <button type="button" id="revive-no">괜찮아요</button>
+  </div>
+</dialog>
+
+<dialog id="over">
+  <h2>게임 끝</h2>
+  <p class="big" id="over-score">0</p>
+  <p id="over-msg"></p>
+  <div class="actions">
+    <button type="button" id="again" class="primary">다시 하기</button>
+  </div>
+</dialog>
+</body>
+</html>
